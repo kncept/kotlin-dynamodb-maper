@@ -23,6 +23,7 @@ class DynamoDbObjectMapper : ObjectMapper {
     TypeMapper.primitiveTypeMappers().forEach { register(it) }
     TypeMapper.javaMathTypeMappers().forEach { register(it) }
     TypeMapper.javaUtilTypeMappers().forEach { register(it) }
+    TypeMapper.javaTimeTypeMappers().forEach { register(it) }
   }
 
   fun <T : Any> objectCreator(type: KClass<T>): DataClassCreator<Any> {

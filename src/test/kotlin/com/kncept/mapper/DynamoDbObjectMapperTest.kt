@@ -5,6 +5,8 @@ import com.kncept.mapper.annotation.MappedCollection
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.security.SecureRandom
+import java.time.*
+import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.function.Consumer
 import kotlin.reflect.KClass
@@ -50,6 +52,7 @@ class DynamoDbObjectMapperTest {
     reconstitutableAsserter.accept(EmptyTypes())
     reconstitutableAsserter.accept(JavaMathTypes())
     reconstitutableAsserter.accept(JavaUtilTypes())
+    reconstitutableAsserter.accept(JavaTimeTypes())
 
     reconstitutableAsserter.accept(SetCollectionTypes())
     reconstitutableAsserter.accept(ListCollectionTypes())
@@ -109,7 +112,29 @@ class DynamoDbObjectMapperTest {
   data class JavaUtilTypes(
       val uuid: UUID = UUID.randomUUID(),
       val ccy: Currency = Currency.getAvailableCurrencies().random(),
-      val legacyDate: Date = Date()
+      val legacyDate: Date = Date(),
+      val locale: Locale = Locale.getDefault(),
+      val enLocale: Locale = Locale.forLanguageTag("en"),
+      val enGbLocale: Locale = Locale.forLanguageTag("en-GB"),
+      val enUsLocale: Locale = Locale.forLanguageTag("en-US"),
+  )
+
+  data class JavaTimeTypes(
+      val unrestricted: LocalDateTime = LocalDateTime.now(Clock.systemUTC()),
+      val toEpochSecond: LocalDateTime =
+          LocalDateTime.now(Clock.systemUTC()).truncatedTo(ChronoUnit.SECONDS),
+      val date: LocalDate = LocalDate.now().minusDays((Math.random() * Short.MAX_VALUE).toLong()),
+      val epochSecondInstant: Instant = Instant.now().truncatedTo(ChronoUnit.SECONDS),
+      val zonedDateTime: ZonedDateTime = ZonedDateTime.now(ZoneId.systemDefault()),
+      val utcZoned: ZonedDateTime = ZonedDateTime.now(Clock.systemUTC()),
+      val currentTime: LocalTime = LocalTime.now(),
+      val currentTimeUtc: LocalTime = LocalTime.now(Clock.systemUTC()),
+      val duration: Duration = Duration.ofSeconds((Math.random() * Short.MAX_VALUE).toLong()),
+      val offsetDateTime: OffsetDateTime = OffsetDateTime.now(),
+      val offsetTime: OffsetTime = OffsetTime.now(),
+      val zone: ZoneId = ZoneId.systemDefault(),
+      val zoneOffset: ZoneOffset =
+          ZoneOffset.ofHoursMinutes((Math.random() * 12).toInt(), (Math.random() * 60).toInt())
   )
 
   data class SetCollectionTypes(
@@ -122,11 +147,6 @@ class DynamoDbObjectMapperTest {
       val mutableStrings: MutableSet<String> = mutableSetOf("3", "4")
   )
 
-  /*
-   * dynamodb uses SETS not LISTS
-   *
-   * This implementation detail may well change
-   */
   data class ListCollectionTypes(
       @MappedCollection(String::class) val nullStrings: List<String>? = null,
       @MappedCollection(String::class) val emptyNullableStrings: List<String>? = listOf(),

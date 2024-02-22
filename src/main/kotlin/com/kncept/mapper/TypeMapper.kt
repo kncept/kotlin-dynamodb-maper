@@ -3,8 +3,10 @@ package com.kncept.mapper
 import aws.sdk.kotlin.services.dynamodb.model.AttributeValue
 import com.kncept.mapper.java.math.BigDecimalMapper
 import com.kncept.mapper.java.math.BigIntegerMapper
+import com.kncept.mapper.java.time.*
 import com.kncept.mapper.java.util.CurrencyMapper
 import com.kncept.mapper.java.util.DateMapper
+import com.kncept.mapper.java.util.LocaleMapper
 import com.kncept.mapper.java.util.UUIDMapper
 import com.kncept.mapper.primitive.*
 import kotlin.reflect.KClass
@@ -59,6 +61,22 @@ interface TypeMapper<T : Any> {
           UUIDMapper(),
           CurrencyMapper(),
           DateMapper(),
+          LocaleMapper(),
+      )
+    }
+
+    fun javaTimeTypeMappers(): List<TypeMapper<*>> {
+      return listOf(
+          LocalDateTimeMapper(),
+          LocalDateMapper(),
+          LocalTimeMapper(),
+          InstantMapper(),
+          ZonedDateTimeMapper(),
+          DurationMapper(),
+          OffsetDateTimeMapper(),
+          OffsetTimeMapper(),
+          ZoneIdMapper(),
+          ZoneOffsetMapper(),
       )
     }
   }

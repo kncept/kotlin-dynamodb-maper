@@ -12,17 +12,17 @@ class DateMapper : TypeMapper<Date> {
     return Date::class
   }
 
-  val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
+  val formatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
 
   override fun attributeType(): KClass<out AttributeValue> {
     return AttributeValue.S::class
   }
 
   override fun toType(attribute: AttributeValue, mapper: ObjectMapper): Date {
-    return dateFormat.parse(attribute.asS())
+    return formatter.parse(attribute.asS())
   }
 
   override fun toAttribute(item: Date, mapper: ObjectMapper): AttributeValue {
-    return AttributeValue.S(dateFormat.format(item))
+    return AttributeValue.S(formatter.format(item))
   }
 }
