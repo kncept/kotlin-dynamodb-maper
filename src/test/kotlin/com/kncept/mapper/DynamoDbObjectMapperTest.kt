@@ -5,7 +5,7 @@ import com.kncept.mapper.annotation.MappedCollection
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.security.SecureRandom
-import java.util.UUID
+import java.util.*
 import java.util.function.Consumer
 import kotlin.reflect.KClass
 import kotlin.reflect.full.declaredMemberProperties
@@ -106,7 +106,11 @@ class DynamoDbObjectMapperTest {
               .add(BigDecimal("0.${(Math.random() * Long.MAX_VALUE).toLong()}")),
   )
 
-  data class JavaUtilTypes(val uuid: UUID = UUID.randomUUID())
+  data class JavaUtilTypes(
+      val uuid: UUID = UUID.randomUUID(),
+      val ccy: Currency = Currency.getAvailableCurrencies().random(),
+      val legacyDate: Date = Date()
+  )
 
   data class SetCollectionTypes(
       @MappedCollection(String::class) val nullStrings: Set<String>? = null,
