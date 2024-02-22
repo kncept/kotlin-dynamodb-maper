@@ -10,6 +10,10 @@ class LongMapper : TypeMapper<Long> {
     return Long::class
   }
 
+  override fun attributeType(): KClass<out AttributeValue> {
+    return AttributeValue.N::class
+  }
+
   override fun toType(attribute: AttributeValue, mapper: ObjectMapper): Long {
     return attribute.asN().toLong()
   }

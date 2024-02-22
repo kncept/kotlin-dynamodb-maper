@@ -10,6 +10,10 @@ class StringMapper : TypeMapper<String> {
     return String::class
   }
 
+  override fun attributeType(): KClass<out AttributeValue> {
+    return AttributeValue.S::class
+  }
+
   override fun toType(attribute: AttributeValue, mapper: ObjectMapper): String {
     return attribute.asS()
   }

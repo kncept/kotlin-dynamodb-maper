@@ -10,6 +10,10 @@ class CharMapper : TypeMapper<Char> {
     return Char::class
   }
 
+  override fun attributeType(): KClass<out AttributeValue> {
+    return AttributeValue.S::class
+  }
+
   override fun toType(attribute: AttributeValue, mapper: ObjectMapper): Char {
     return attribute.asS().get(0)
   }

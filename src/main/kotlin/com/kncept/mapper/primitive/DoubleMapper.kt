@@ -10,6 +10,10 @@ class DoubleMapper : TypeMapper<Double> {
     return Double::class
   }
 
+  override fun attributeType(): KClass<out AttributeValue> {
+    return AttributeValue.N::class
+  }
+
   override fun toType(attribute: AttributeValue, mapper: ObjectMapper): Double {
     return attribute.asN().toDouble()
   }

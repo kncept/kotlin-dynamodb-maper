@@ -1,6 +1,7 @@
 package com.kncept.mapper.reflect
 
 import kotlin.reflect.KClass
+import kotlin.reflect.KProperty1
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.primaryConstructor
 
@@ -10,11 +11,12 @@ class ReflectiveDataClassCreator<T : Any>(private val type: KClass<T>) : DataCla
     return type
   }
 
-  override fun constructorParams(): Map<String, KClass<Any>> {
+  override fun types(): Map<String, KProperty1<Any, Any>> {
+    val memberProperties = type.declaredMemberProperties.map { it.name to it }.toMap()
     return type.primaryConstructor!!
         .parameters
-        .map { it.name!! to it.type.classifier as KClass<Any> }
-        .toMap()
+        .map { it.name!! to memberProperties[it.name]!! }
+        .toMap() as Map<String, KProperty1<Any, Any>>
   }
 
   override fun values(item: Any): Map<String, Any?> {

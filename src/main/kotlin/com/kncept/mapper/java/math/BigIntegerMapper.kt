@@ -11,7 +11,12 @@ class BigIntegerMapper : TypeMapper<BigInteger> {
     return BigInteger::class
   }
 
+  override fun attributeType(): KClass<out AttributeValue> {
+    return AttributeValue.N::class
+  }
+
   override fun toType(attribute: AttributeValue, mapper: ObjectMapper): BigInteger {
+    if (attribute is AttributeValue.S) return BigInteger(attribute.asS())
     return BigInteger(attribute.asN())
   }
 

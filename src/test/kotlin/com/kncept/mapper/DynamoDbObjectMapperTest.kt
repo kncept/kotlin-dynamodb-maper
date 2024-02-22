@@ -1,6 +1,7 @@
 package com.kncept.mapper
 
 import aws.sdk.kotlin.services.dynamodb.model.AttributeValue
+import com.kncept.mapper.annotation.MappedCollection
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.security.SecureRandom
@@ -48,11 +49,19 @@ class DynamoDbObjectMapperTest {
     reconstitutableAsserter.accept(PrimitiveTypes())
     reconstitutableAsserter.accept(EmptyTypes())
     reconstitutableAsserter.accept(JavaMathTypes())
+    reconstitutableAsserter.accept(JavaUtilTypes())
+
+    reconstitutableAsserter.accept(SetCollectionTypes())
+    reconstitutableAsserter.accept(ListCollectionTypes())
   }
 
   class FakeEmptyTypesMapper : TypeMapper<EmptyTypes> {
     override fun type(): KClass<EmptyTypes> {
       return EmptyTypes::class
+    }
+
+    override fun attributeType(): KClass<out AttributeValue> {
+      TODO("Not yet implemented")
     }
 
     override fun toType(attribute: AttributeValue, mapper: ObjectMapper): EmptyTypes {
@@ -77,6 +86,12 @@ class DynamoDbObjectMapperTest {
       val short: Short = (Math.random() * Short.MAX_VALUE).toInt().toShort(),
       val int: Int = (Math.random() * Int.MAX_VALUE).toInt(),
       val long: Long = (Math.random() * Long.MAX_VALUE).toLong(),
+      val byteArray: ByteArray =
+          byteArrayOf(
+              (Math.random() * Byte.MAX_VALUE).toInt().toByte(),
+              (Math.random() * Byte.MAX_VALUE).toInt().toByte(),
+              (Math.random() * Byte.MAX_VALUE).toInt().toByte(),
+          )
   )
 
   data class JavaMathTypes(
@@ -89,5 +104,32 @@ class DynamoDbObjectMapperTest {
           bigInteger
               .toBigDecimal()
               .add(BigDecimal("0.${(Math.random() * Long.MAX_VALUE).toLong()}")),
+  )
+
+  data class JavaUtilTypes(val uuid: UUID = UUID.randomUUID())
+
+  data class SetCollectionTypes(
+      @MappedCollection(String::class) val nullStrings: Set<String>? = null,
+      @MappedCollection(String::class) val emptyNullableStrings: Set<String>? = setOf(),
+      @MappedCollection(String::class) val emptyStrings: Set<String> = setOf(),
+      @MappedCollection(String::class) val stringWithEmpty: Set<String> = setOf(""),
+      @MappedCollection(String::class) val strings: Set<String> = setOf("1", "2"),
+      @MappedCollection(String::class)
+      val mutableStrings: MutableSet<String> = mutableSetOf("3", "4")
+  )
+
+  /*
+   * dynamodb uses SETS not LISTS
+   *
+   * This implementation detail may well change
+   */
+  data class ListCollectionTypes(
+      @MappedCollection(String::class) val nullStrings: List<String>? = null,
+      @MappedCollection(String::class) val emptyNullableStrings: List<String>? = listOf(),
+      @MappedCollection(String::class) val emptyStrings: List<String> = listOf(),
+      @MappedCollection(String::class) val stringWithEmpty: List<String> = listOf(""),
+      @MappedCollection(String::class) val strings: List<String> = listOf("1", "2"),
+      @MappedCollection(String::class)
+      val mutableStrings: MutableList<String> = mutableListOf("3", "4")
   )
 }

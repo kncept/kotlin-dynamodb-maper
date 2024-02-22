@@ -28,7 +28,7 @@ class DataClassCreatorTest {
   @ParameterizedTest
   @MethodSource("implementations")
   fun canListParamaters(creator: DataClassCreator<SampleType>) {
-    val constructorParams = creator.constructorParams()
+    val constructorParams = creator.types()
     assertTrue(constructorParams.containsKey("first"))
     assertTrue(constructorParams.containsKey("second"))
     assertTrue(constructorParams.containsKey("third"))

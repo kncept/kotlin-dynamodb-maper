@@ -10,6 +10,10 @@ class ByteArrayMapper : TypeMapper<ByteArray> {
     return ByteArray::class
   }
 
+  override fun attributeType(): KClass<out AttributeValue> {
+    return AttributeValue.B::class
+  }
+
   override fun toType(attribute: AttributeValue, mapper: ObjectMapper): ByteArray {
     return attribute.asB()
   }

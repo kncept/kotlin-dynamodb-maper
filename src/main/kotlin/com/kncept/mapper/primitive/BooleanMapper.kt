@@ -10,7 +10,12 @@ class BooleanMapper : TypeMapper<Boolean> {
     return Boolean::class
   }
 
+  override fun attributeType(): KClass<out AttributeValue> {
+    return AttributeValue.Bool::class
+  }
+
   override fun toType(attribute: AttributeValue, mapper: ObjectMapper): Boolean {
+    if (attribute is AttributeValue.S) return attribute.asS().toBoolean()
     return attribute.asBool()
   }
 

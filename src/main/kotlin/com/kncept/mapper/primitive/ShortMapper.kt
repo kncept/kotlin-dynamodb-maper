@@ -10,6 +10,10 @@ class ShortMapper : TypeMapper<Short> {
     return Short::class
   }
 
+  override fun attributeType(): KClass<out AttributeValue> {
+    return AttributeValue.N::class
+  }
+
   override fun toType(attribute: AttributeValue, mapper: ObjectMapper): Short {
     return attribute.asN().toShort()
   }

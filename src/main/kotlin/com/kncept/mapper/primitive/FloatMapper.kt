@@ -10,6 +10,10 @@ class FloatMapper : TypeMapper<Float> {
     return Float::class
   }
 
+  override fun attributeType(): KClass<out AttributeValue> {
+    return AttributeValue.N::class
+  }
+
   override fun toType(attribute: AttributeValue, mapper: ObjectMapper): Float {
     return attribute.asN().toFloat()
   }
