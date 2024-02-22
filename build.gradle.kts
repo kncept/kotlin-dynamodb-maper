@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm") version "1.9.0"
+    id("com.ncorti.ktfmt.gradle") version "0.17.0"
 }
 
 java {
@@ -8,6 +9,9 @@ java {
 
 tasks.wrapper { gradleVersion = "8.6" }
 
+val awsKotlinSdkVersion = "1.0.62"
+val junit5Version = "5.10.2"
+val kotlinCoroutineVersion = "1.7.3"
 
 tasks.withType<Test> {
     useJUnitPlatform()
@@ -21,11 +25,14 @@ repositories {
 
 dependencies {
 
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutineVersion")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutineVersion")
+    implementation(kotlin("reflect"))
 
-    implementation("aws.sdk.kotlin:aws-core:1.0.61")
-    implementation("aws.sdk.kotlin:dynamodb:1.0.61")
+    testImplementation("org.junit.jupiter:junit-jupiter:$junit5Version")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
+    implementation("aws.sdk.kotlin:aws-core:$awsKotlinSdkVersion")
+    implementation("aws.sdk.kotlin:dynamodb:$awsKotlinSdkVersion")
 
 }
