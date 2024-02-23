@@ -29,6 +29,15 @@ jobs:
           name: test-results
           path: build/reports/tests/test/
 
+      - name: Init gradle.properties
+        run: echo "${GRADLE_PROPERTIES}" > gradle.properties
+        env:
+          GRADLE_PROPERTIES: ${{ secrets.GRADLE_PROPERTIES }}
+      - name: Init secring.gpg
+        run: echo -n "${SECRING_GPG}" | base64 --decode > secring.gpg
+        env:
+          SECRING_GPG: ${{ secrets.SECRING_GPG }}
+
       - name: Release to Maven Central
         run: ./gradlew publish
 
