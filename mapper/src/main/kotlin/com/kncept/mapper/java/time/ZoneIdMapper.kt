@@ -4,7 +4,6 @@ import aws.sdk.kotlin.services.dynamodb.model.AttributeValue
 import com.kncept.mapper.ObjectMapper
 import com.kncept.mapper.TypeMapper
 import java.time.ZoneId
-import java.util.*
 import kotlin.reflect.KClass
 
 class ZoneIdMapper : TypeMapper<ZoneId> {

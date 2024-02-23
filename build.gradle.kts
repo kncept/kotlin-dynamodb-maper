@@ -13,26 +13,41 @@ val awsKotlinSdkVersion = "1.0.62"
 val junit5Version = "5.10.2"
 val kotlinCoroutineVersion = "1.7.3"
 
-tasks.withType<Test> {
-    useJUnitPlatform()
-    maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).coerceAtLeast(1)
+group = "com.kncept.ddb.mapper"
+version = calcversion()
+fun calcversion(): String {
+    var vers = "0.0.0-SNAPSHOT"
+    val grn = System.getenv("GITHUB_REF_NAME")
+    if (grn != null && !grn.trim().equals("")) {
+        if (grn.startsWith("v")) {
+            vers = grn.substring(1);
+        }
+    }
+    return vers
 }
 
+subprojects {
+    apply(plugin = "org.jetbrains.kotlin.jvm")
+    apply(plugin = "com.ncorti.ktfmt.gradle")
+    group = parent!!.group
+    version = parent!!.version
+
+    tasks.withType<Test> {
+        useJUnitPlatform()
+        maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).coerceAtLeast(1)
+    }
+
+    java {
+        sourceCompatibility = parent!!.java.sourceCompatibility
+    }
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
+
+}
 repositories {
     mavenLocal()
     mavenCentral()
-}
-
-dependencies {
-
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutineVersion")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutineVersion")
-    implementation(kotlin("reflect"))
-
-    testImplementation("org.junit.jupiter:junit-jupiter:$junit5Version")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-
-    implementation("aws.sdk.kotlin:aws-core:$awsKotlinSdkVersion")
-    implementation("aws.sdk.kotlin:dynamodb:$awsKotlinSdkVersion")
-
 }

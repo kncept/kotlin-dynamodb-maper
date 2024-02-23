@@ -3,7 +3,6 @@ package com.kncept.mapper
 import aws.sdk.kotlin.services.dynamodb.model.AttributeValue
 import com.kncept.mapper.annotation.MappedBy
 import com.kncept.mapper.annotation.MappedCollection
-import com.kncept.mapper.primitive.*
 import com.kncept.mapper.reflect.DataClassCreator
 import com.kncept.mapper.reflect.GenericObjectMapper
 import com.kncept.mapper.reflect.ReflectiveDataClassCreator
