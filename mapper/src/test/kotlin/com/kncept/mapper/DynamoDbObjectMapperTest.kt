@@ -73,11 +73,11 @@ class DynamoDbObjectMapperTest {
       TODO("Not yet implemented")
     }
 
-    override fun toType(attribute: AttributeValue, mapper: ObjectMapper): EmptyTypes {
+    override fun toType(attribute: AttributeValue): EmptyTypes {
       TODO("Not yet implemented")
     }
 
-    override fun toAttribute(item: EmptyTypes, mapper: ObjectMapper): AttributeValue {
+    override fun toAttribute(item: EmptyTypes): AttributeValue {
       TODO("Not yet implemented")
     }
   }

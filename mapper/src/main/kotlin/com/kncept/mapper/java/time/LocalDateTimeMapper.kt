@@ -1,7 +1,6 @@
 package com.kncept.mapper.java.time
 
 import aws.sdk.kotlin.services.dynamodb.model.AttributeValue
-import com.kncept.mapper.ObjectMapper
 import com.kncept.mapper.TypeMapper
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -16,7 +15,7 @@ class LocalDateTimeMapper : TypeMapper<LocalDateTime> {
     return AttributeValue.S::class
   }
 
-  override fun toType(attribute: AttributeValue, mapper: ObjectMapper): LocalDateTime {
+  override fun toType(attribute: AttributeValue): LocalDateTime {
     // epoch second
     if (attribute is AttributeValue.N) {
       return LocalDateTime.ofEpochSecond(attribute.asN().toLong(), 0, ZoneOffset.UTC)
@@ -24,7 +23,7 @@ class LocalDateTimeMapper : TypeMapper<LocalDateTime> {
     return LocalDateTime.parse(attribute.asS())
   }
 
-  override fun toAttribute(item: LocalDateTime, mapper: ObjectMapper): AttributeValue {
+  override fun toAttribute(item: LocalDateTime): AttributeValue {
     return AttributeValue.S(item.toString())
   }
 }

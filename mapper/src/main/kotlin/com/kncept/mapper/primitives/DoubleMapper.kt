@@ -1,7 +1,6 @@
 package com.kncept.mapper.primitives
 
 import aws.sdk.kotlin.services.dynamodb.model.AttributeValue
-import com.kncept.mapper.ObjectMapper
 import com.kncept.mapper.TypeMapper
 import kotlin.reflect.KClass
 
@@ -14,11 +13,11 @@ class DoubleMapper : TypeMapper<Double> {
     return AttributeValue.N::class
   }
 
-  override fun toType(attribute: AttributeValue, mapper: ObjectMapper): Double {
+  override fun toType(attribute: AttributeValue): Double {
     return attribute.asN().toDouble()
   }
 
-  override fun toAttribute(item: Double, mapper: ObjectMapper): AttributeValue {
+  override fun toAttribute(item: Double): AttributeValue {
     return AttributeValue.N(item.toString())
   }
 }

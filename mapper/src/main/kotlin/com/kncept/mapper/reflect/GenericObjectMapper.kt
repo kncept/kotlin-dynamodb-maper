@@ -5,12 +5,15 @@ import com.kncept.mapper.ObjectMapper
 import com.kncept.mapper.TypeMapper
 import kotlin.reflect.KClass
 
-class GenericObjectMapper<T : Any>(private val type: KClass<T>) : TypeMapper<T> {
+class GenericObjectMapper<T : Any>(
+    private val mapper: ObjectMapper,
+    private val type: KClass<T>,
+) : TypeMapper<T> {
   override fun type(): KClass<T> {
     return type
   }
 
-  override fun toType(attribute: AttributeValue, mapper: ObjectMapper): T {
+  override fun toType(attribute: AttributeValue): T {
     return mapper.toItem(type, attribute.asM())
   }
 
@@ -18,7 +21,7 @@ class GenericObjectMapper<T : Any>(private val type: KClass<T>) : TypeMapper<T> 
     return AttributeValue.M::class
   }
 
-  override fun toAttribute(item: T, mapper: ObjectMapper): AttributeValue {
+  override fun toAttribute(item: T): AttributeValue {
     return AttributeValue.M(mapper.toAttributes(item))
   }
 }

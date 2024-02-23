@@ -44,7 +44,7 @@ class DynamoDbObjectMapper(
 
     // make sure there _are_ some declared member properties before keeping on going
     if (mapper == null && type.declaredMemberProperties.isNotEmpty()) {
-      val newMapper = GenericObjectMapper(type)
+      val newMapper = GenericObjectMapper(this, type)
       typeMappers[type] = newMapper
       return newMapper as TypeMapper<Any>
     }
@@ -76,7 +76,7 @@ class DynamoDbObjectMapper(
     // handle an explicit MappedBy annotation on the property
     if (mappedBy != null) {
       val mapper = typeMapper(mappedBy.typeMapper) as TypeMapper<Any>
-      return mapper.toType(attribute, this) as T?
+      return mapper.toType(attribute) as T?
     }
 
     if (type.isSubclassOf(Set::class)) {
@@ -117,7 +117,7 @@ class DynamoDbObjectMapper(
   fun <T : Any> asItem(type: KClass<T>, attribute: AttributeValue): T? {
     if (attribute is AttributeValue.Null) return null
     val mapper = typeMapper(type)
-    return mapper.toType(attribute, this) as T
+    return mapper.toType(attribute) as T
   }
 
   override fun <T : Any> toAttributes(item: T): Map<String, AttributeValue> {
@@ -146,7 +146,7 @@ class DynamoDbObjectMapper(
     // handle an explicit MappedBy annotation on the property
     if (mappedBy != null) {
       val mapper = typeMapper(mappedBy.typeMapper)
-      return mapper.toAttribute(item, this)
+      return mapper.toAttribute(item)
     }
     if (type.isSubclassOf(Set::class)) {
       val annotation =
@@ -181,10 +181,10 @@ class DynamoDbObjectMapper(
     val mappedBy = type.findAnnotations(MappedBy::class).firstOrNull()
     if (mappedBy != null) {
       val mapper = typeMapper(mappedBy.typeMapper)
-      return mapper.toAttribute(item, this)
+      return mapper.toAttribute(item)
     }
     val mapper = typeMapper(type)
-    return mapper.toAttribute(item, this)
+    return mapper.toAttribute(item)
   }
 
   fun register(module: TypeMapperModule) {

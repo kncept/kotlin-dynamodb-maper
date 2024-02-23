@@ -1,7 +1,6 @@
 package com.kncept.mapper.java.time
 
 import aws.sdk.kotlin.services.dynamodb.model.AttributeValue
-import com.kncept.mapper.ObjectMapper
 import com.kncept.mapper.TypeMapper
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -18,11 +17,11 @@ class LocalTimeMapper : TypeMapper<LocalTime> {
     return AttributeValue.S::class
   }
 
-  override fun toType(attribute: AttributeValue, mapper: ObjectMapper): LocalTime {
+  override fun toType(attribute: AttributeValue): LocalTime {
     return LocalTime.parse(attribute.asS(), formatter)
   }
 
-  override fun toAttribute(item: LocalTime, mapper: ObjectMapper): AttributeValue {
+  override fun toAttribute(item: LocalTime): AttributeValue {
     return AttributeValue.S(item.format(formatter))
   }
 }

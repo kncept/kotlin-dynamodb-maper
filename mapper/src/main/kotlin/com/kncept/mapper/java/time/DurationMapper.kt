@@ -1,7 +1,6 @@
 package com.kncept.mapper.java.time
 
 import aws.sdk.kotlin.services.dynamodb.model.AttributeValue
-import com.kncept.mapper.ObjectMapper
 import com.kncept.mapper.TypeMapper
 import java.time.Duration
 import kotlin.reflect.KClass
@@ -15,11 +14,11 @@ class DurationMapper : TypeMapper<Duration> {
     return AttributeValue.S::class
   }
 
-  override fun toType(attribute: AttributeValue, mapper: ObjectMapper): Duration {
+  override fun toType(attribute: AttributeValue): Duration {
     return Duration.parse(attribute.asS())
   }
 
-  override fun toAttribute(item: Duration, mapper: ObjectMapper): AttributeValue {
+  override fun toAttribute(item: Duration): AttributeValue {
     return AttributeValue.S(item.toString())
   }
 }

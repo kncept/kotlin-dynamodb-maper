@@ -1,7 +1,6 @@
 package com.kncept.mapper.java.time
 
 import aws.sdk.kotlin.services.dynamodb.model.AttributeValue
-import com.kncept.mapper.ObjectMapper
 import com.kncept.mapper.TypeMapper
 import java.time.ZoneOffset
 import kotlin.reflect.KClass
@@ -15,11 +14,11 @@ class ZoneOffsetMapper : TypeMapper<ZoneOffset> {
     return AttributeValue.S::class
   }
 
-  override fun toType(attribute: AttributeValue, mapper: ObjectMapper): ZoneOffset {
+  override fun toType(attribute: AttributeValue): ZoneOffset {
     return ZoneOffset.of(attribute.asS())
   }
 
-  override fun toAttribute(item: ZoneOffset, mapper: ObjectMapper): AttributeValue {
+  override fun toAttribute(item: ZoneOffset): AttributeValue {
     return AttributeValue.S(item.toString())
   }
 }

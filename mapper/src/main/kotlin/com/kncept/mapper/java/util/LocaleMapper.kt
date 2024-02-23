@@ -1,7 +1,6 @@
 package com.kncept.mapper.java.util
 
 import aws.sdk.kotlin.services.dynamodb.model.AttributeValue
-import com.kncept.mapper.ObjectMapper
 import com.kncept.mapper.TypeMapper
 import java.util.*
 import kotlin.reflect.KClass
@@ -15,11 +14,11 @@ class LocaleMapper : TypeMapper<Locale> {
     return AttributeValue.S::class
   }
 
-  override fun toType(attribute: AttributeValue, mapper: ObjectMapper): Locale {
+  override fun toType(attribute: AttributeValue): Locale {
     return Locale.forLanguageTag(attribute.asS())
   }
 
-  override fun toAttribute(item: Locale, mapper: ObjectMapper): AttributeValue {
+  override fun toAttribute(item: Locale): AttributeValue {
     return AttributeValue.S(item.toLanguageTag())
   }
 }
