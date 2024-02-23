@@ -5,19 +5,19 @@ import com.kncept.mapper.annotation.MappedBy
 import com.kncept.mapper.annotation.MappedCollection
 import com.kncept.mapper.primitive.*
 import com.kncept.mapper.reflect.DataClassCreator
+import com.kncept.mapper.reflect.GenericObjectMapper
 import com.kncept.mapper.reflect.ReflectiveDataClassCreator
 import java.lang.IllegalStateException
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
+import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.findAnnotations
 import kotlin.reflect.full.isSubclassOf
-import kotlin.reflect.full.primaryConstructor
 
 class DynamoDbObjectMapper : ObjectMapper {
 
   val objectCreators: MutableMap<KClass<out Any>, DataClassCreator<out Any>> = mutableMapOf()
-  val implictTypeMappers: MutableMap<KClass<out Any>, TypeMapper<out Any>> = mutableMapOf()
-  val explictTypeMappers: MutableMap<KClass<out Any>, TypeMapper<out Any>> = mutableMapOf()
+  val typeMappers: MutableMap<KClass<out Any>, TypeMapper<out Any>> = mutableMapOf()
 
   init {
     TypeMapper.primitiveTypeMappers().forEach { register(it) }
@@ -32,12 +32,16 @@ class DynamoDbObjectMapper : ObjectMapper {
   }
 
   fun <T : Any> typeMapper(type: KClass<T>): TypeMapper<Any> {
-    return implictTypeMappers[type] as TypeMapper<Any>?
-        ?: throw NullPointerException("No mapper registered for type $type")
-  }
+    val mapper = typeMappers[type] as TypeMapper<Any>?
 
-  fun explicitTypeMapper(type: KClass<TypeMapper<out Any>>): TypeMapper<Any> {
-    return explictTypeMappers.getOrPut(type) { type.primaryConstructor!!.call() } as TypeMapper<Any>
+    // make sure there _are_ some declared member properties before keeping on going
+    if (mapper == null && type.declaredMemberProperties.isNotEmpty()) {
+      val newMapper = GenericObjectMapper(type)
+      typeMappers[type] = newMapper
+      return newMapper as TypeMapper<Any>
+    }
+
+    return mapper ?: throw IllegalStateException("Unable to create mapper for type $type")
   }
 
   override fun <T : Any> toItem(type: KClass<T>, attributes: Map<String, AttributeValue>): T {
@@ -63,7 +67,7 @@ class DynamoDbObjectMapper : ObjectMapper {
 
     // handle an explicit MappedBy annotation on the property
     if (mappedBy != null) {
-      val mapper = explicitTypeMapper(mappedBy.typeMapper) as TypeMapper<Any>
+      val mapper = typeMapper(mappedBy.typeMapper) as TypeMapper<Any>
       return mapper.toType(attribute, this) as T?
     }
 
@@ -118,7 +122,8 @@ class DynamoDbObjectMapper : ObjectMapper {
             asAttribute(type.value, values[type.key])?.let { type.key to it }
           } catch (t: Throwable) {
             throw IllegalStateException(
-                "error mapping ${item::class.simpleName} param ${type.key} ${type.value.name}", t)
+                "error mapping ${item::class.simpleName} param ${type.key} ${type.value.returnType}",
+                t)
           }
         }
         .filterNotNull()
@@ -132,7 +137,7 @@ class DynamoDbObjectMapper : ObjectMapper {
 
     // handle an explicit MappedBy annotation on the property
     if (mappedBy != null) {
-      val mapper = explicitTypeMapper(mappedBy.typeMapper) as TypeMapper<Any>
+      val mapper = typeMapper(mappedBy.typeMapper)
       return mapper.toAttribute(item, this)
     }
     if (type.isSubclassOf(Set::class)) {
@@ -166,8 +171,8 @@ class DynamoDbObjectMapper : ObjectMapper {
 
     // handle an explicit MappedBy annotation on the class
     val mappedBy = type.findAnnotations(MappedBy::class).firstOrNull()
-    if (item != null && mappedBy != null) {
-      val mapper = explicitTypeMapper(mappedBy.typeMapper) as TypeMapper<Any>
+    if (mappedBy != null) {
+      val mapper = typeMapper(mappedBy.typeMapper)
       return mapper.toAttribute(item, this)
     }
     val mapper = typeMapper(type)
@@ -175,7 +180,7 @@ class DynamoDbObjectMapper : ObjectMapper {
   }
 
   fun register(mapper: TypeMapper<out Any>) {
-    implictTypeMappers[mapper.type()] = mapper
+    typeMappers[mapper.type()] = mapper
   }
 
   fun register(creator: DataClassCreator<out Any>) {

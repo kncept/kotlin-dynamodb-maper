@@ -2,6 +2,7 @@ package com.kncept.mapper
 
 import aws.sdk.kotlin.services.dynamodb.model.AttributeValue
 import com.kncept.mapper.annotation.MappedCollection
+import com.kncept.mapper.reflect.GenericObjectMapper
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.security.SecureRandom
@@ -10,7 +11,6 @@ import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.function.Consumer
 import kotlin.reflect.KClass
-import kotlin.reflect.full.declaredMemberProperties
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -18,24 +18,27 @@ import org.junit.jupiter.api.assertThrows
 class DynamoDbObjectMapperTest {
 
   @Test
-  fun canRegisterTypes() {
+  fun canManuallyRegisterTypes() {
     val objectMapper = DynamoDbObjectMapper()
-    val intTypeMapper = objectMapper.typeMapper(Int::class)
-    assertNotNull(intTypeMapper)
-    val thrown: Throwable = assertThrows { objectMapper.typeMapper(EmptyTypes::class) }
-    assertNotNull(thrown)
     objectMapper.register(FakeEmptyTypesMapper())
     val emptyTypeMapper = objectMapper.typeMapper(EmptyTypes::class)
     assertNotNull(emptyTypeMapper)
+    assertEquals(FakeEmptyTypesMapper::class, emptyTypeMapper::class)
   }
 
-  //    @Test
-  fun typeMapperForAllTypes() {
+  @Test
+  fun genericTypesAreAutomaticallyRegistered() {
     val objectMapper = DynamoDbObjectMapper()
-    PrimitiveTypes::class.declaredMemberProperties.forEach {
-      val typeMapper = objectMapper.typeMapper(it.returnType as KClass<Any>)
-      assertNotNull(typeMapper)
-    }
+    val emptyTypeMapper = objectMapper.typeMapper(EmptyTypes::class)
+    assertNotNull(emptyTypeMapper)
+    assertEquals(GenericObjectMapper::class, emptyTypeMapper::class)
+  }
+
+  @Test
+  fun cannotContinueToMapBasicTypes() {
+    val objectMapper = DynamoDbObjectMapper()
+    val e = assertThrows<IllegalStateException> { objectMapper.typeMapper(Any::class) }
+    assertNotNull(e)
   }
 
   @Test
@@ -56,6 +59,9 @@ class DynamoDbObjectMapperTest {
 
     reconstitutableAsserter.accept(SetCollectionTypes())
     reconstitutableAsserter.accept(ListCollectionTypes())
+
+    reconstitutableAsserter.accept(ComplexTypes())
+    reconstitutableAsserter.accept(RecursiveTypes())
   }
 
   class FakeEmptyTypesMapper : TypeMapper<EmptyTypes> {
@@ -94,7 +100,9 @@ class DynamoDbObjectMapperTest {
               (Math.random() * Byte.MAX_VALUE).toInt().toByte(),
               (Math.random() * Byte.MAX_VALUE).toInt().toByte(),
               (Math.random() * Byte.MAX_VALUE).toInt().toByte(),
-          )
+          ),
+      val float: Float = Math.random().toFloat(),
+      val double: Double = Math.random()
   )
 
   data class JavaMathTypes(
@@ -156,4 +164,18 @@ class DynamoDbObjectMapperTest {
       @MappedCollection(String::class)
       val mutableStrings: MutableList<String> = mutableListOf("3", "4")
   )
+
+  data class NestedType(
+      val uuid: UUID = UUID.randomUUID(),
+      val asOf: LocalDateTime = LocalDateTime.now(Clock.systemUTC())
+  )
+
+  data class ComplexTypes(
+      val simple: String = UUID.randomUUID().toString(),
+      val nested: NestedType = NestedType(),
+      val nullNested: NestedType? = null,
+      val nullableNested: NestedType? = NestedType()
+  )
+
+  data class RecursiveTypes(val recursiveType: RecursiveTypes? = RecursiveTypes(null))
 }
