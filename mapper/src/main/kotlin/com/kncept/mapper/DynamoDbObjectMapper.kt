@@ -27,8 +27,12 @@ class DynamoDbObjectMapper(
         )
 ) : ObjectMapper {
 
-  val objectCreators: MutableMap<KClass<out Any>, DataClassCreator<out Any>> = mutableMapOf()
-  val typeMappers: MutableMap<KClass<out Any>, TypeMapper<out Any>> = mutableMapOf()
+  private val objectCreators: MutableMap<KClass<out Any>, DataClassCreator<out Any>> =
+      mutableMapOf()
+  private val typeMappers: MutableMap<KClass<out Any>, TypeMapper<out Any>> = mutableMapOf()
+
+  var emitNulls: Boolean = false
+  var automapObjects: Boolean = true
 
   init {
     initialModules.forEach { register(it) }
@@ -43,13 +47,17 @@ class DynamoDbObjectMapper(
     val mapper = typeMappers[type] as TypeMapper<Any>?
 
     // make sure there _are_ some declared member properties before keeping on going
-    if (mapper == null && type.declaredMemberProperties.isNotEmpty()) {
-      val newMapper = GenericObjectMapper(this, type)
-      typeMappers[type] = newMapper
-      return newMapper as TypeMapper<Any>
+    if (mapper == null && automapObjects) {
+      if (type.declaredMemberProperties.isNotEmpty()) {
+        val newMapper = GenericObjectMapper(this, type)
+        typeMappers[type] = newMapper
+        return newMapper as TypeMapper<Any>
+      } else {
+        throw IllegalStateException("Unable to create mapper for type $type")
+      }
     }
 
-    return mapper ?: throw IllegalStateException("Unable to create mapper for type $type")
+    return mapper ?: throw IllegalStateException("Unable to lookup mapper for type $type")
   }
 
   override fun <T : Any> toItem(type: KClass<T>, attributes: Map<String, AttributeValue>): T {
@@ -139,6 +147,7 @@ class DynamoDbObjectMapper(
   }
 
   fun asAttribute(property: KProperty<out Any>, item: Any?): AttributeValue? {
+    if (item == null && emitNulls) return AttributeValue.Null(true)
     if (item == null) return null
     val type = property.returnType.classifier as KClass<out Any>
     val mappedBy = property.findAnnotations(MappedBy::class).firstOrNull()
@@ -174,7 +183,7 @@ class DynamoDbObjectMapper(
   }
 
   fun asAttribute(type: KClass<out Any>, item: Any?): AttributeValue? {
-    //    if (item == null && emitNulls) return AttributeValue.Null(true)
+    if (item == null && emitNulls) return AttributeValue.Null(true)
     if (item == null) return null
 
     // handle an explicit MappedBy annotation on the class

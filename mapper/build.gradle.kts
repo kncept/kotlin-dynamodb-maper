@@ -10,22 +10,6 @@ val awsKotlinSdkVersion = "1.0.62"
 val junit5Version = "5.10.2"
 val kotlinCoroutineVersion = "1.7.3"
 
-tasks.jar {
-    manifest {
-        attributes["Implementation-Title"] = project.name
-        attributes["Implementation-Vendor"] = "kncept"
-        attributes["Implementation-Version"] = project.version
-        attributes["Implementation-Author"] = "Nicholas Krul" //non standard
-        attributes["Created-By"] = System.getProperty("java.version")
-        attributes["Built-By"] = System.getProperty("user.name")
-        attributes["Built-Date"] = LocalDateTime.now().toString()
-//        attributes["Source-Compatibility"] = project.parent.sourceCompatibility
-//                attributes["Target-Compatibility': project.targetCompatibility,
-        attributes["Build-Hash"] = getCheckedOutGitCommitHash()
-        // 'Main-Class': 'none'
-    }
-}
-
 // eg: https://gist.github.com/MRezaNasirloo/ccfdb24f10ebefee0d871d4e84b37309
 fun getCheckedOutGitCommitHash(): String {
     val gitFolder = "$rootDir/.git/"
@@ -35,6 +19,24 @@ fun getCheckedOutGitCommitHash(): String {
     if(isCommit) return head[0].trim()
     val refHead = File(gitFolder + head[1].trim()) // .git/refs/heads/master
     return refHead.readText().trim()
+}
+
+tasks.jar {
+    manifest {
+        attributes["Implementation-Title"] = project.name
+        attributes["Implementation-Vendor"] = "kncept"
+        attributes["Implementation-Version"] = project.version
+        attributes["Implementation-Author"] = "Nicholas Krul" //non standard
+        attributes["Created-By"] = System.getProperty("java.version")
+        attributes["Built-By"] = System.getProperty("user.name")
+        attributes["Built-Date"] = LocalDateTime.now().toString()
+        attributes["Source-Compatibility"] = project.parent!!.java.sourceCompatibility
+        attributes["Target-Compatibility"] = project.parent!!.java.targetCompatibility
+        attributes["Build-Hash"] = getCheckedOutGitCommitHash()
+        // 'Main-Class': 'none'
+
+        attributes["awsKotlinSdkVersion"] = awsKotlinSdkVersion
+    }
 }
 
 dependencies {
