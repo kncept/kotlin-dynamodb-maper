@@ -1,14 +1,8 @@
 package com.kncept.mapper
 
 import aws.sdk.kotlin.services.dynamodb.model.AttributeValue
-import com.kncept.mapper.java.math.BigDecimalMapper
-import com.kncept.mapper.java.math.BigIntegerMapper
 import com.kncept.mapper.java.time.*
-import com.kncept.mapper.java.util.CurrencyMapper
-import com.kncept.mapper.java.util.DateMapper
-import com.kncept.mapper.java.util.LocaleMapper
-import com.kncept.mapper.java.util.UUIDMapper
-import com.kncept.mapper.primitive.*
+import com.kncept.mapper.primitives.*
 import kotlin.reflect.KClass
 
 interface TypeMapper<T : Any> {
@@ -31,53 +25,4 @@ interface TypeMapper<T : Any> {
   fun toAttribute(item: T, mapper: ObjectMapper): AttributeValue
 
   fun attributeType(): KClass<out AttributeValue>
-
-  companion object {
-
-    fun primitiveTypeMappers(): List<TypeMapper<*>> {
-      return listOf(
-          ByteArrayMapper(),
-          BooleanMapper(),
-          ByteMapper(),
-          ShortMapper(),
-          IntMapper(),
-          LongMapper(),
-          FloatMapper(),
-          DoubleMapper(),
-          CharMapper(),
-          StringMapper(),
-      )
-    }
-
-    fun javaMathTypeMappers(): List<TypeMapper<*>> {
-      return listOf(
-          BigIntegerMapper(),
-          BigDecimalMapper(),
-      )
-    }
-
-    fun javaUtilTypeMappers(): List<TypeMapper<*>> {
-      return listOf(
-          UUIDMapper(),
-          CurrencyMapper(),
-          DateMapper(),
-          LocaleMapper(),
-      )
-    }
-
-    fun javaTimeTypeMappers(): List<TypeMapper<*>> {
-      return listOf(
-          LocalDateTimeMapper(),
-          LocalDateMapper(),
-          LocalTimeMapper(),
-          InstantMapper(),
-          ZonedDateTimeMapper(),
-          DurationMapper(),
-          OffsetDateTimeMapper(),
-          OffsetTimeMapper(),
-          ZoneIdMapper(),
-          ZoneOffsetMapper(),
-      )
-    }
-  }
 }

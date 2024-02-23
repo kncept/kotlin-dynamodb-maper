@@ -1,4 +1,4 @@
-package com.kncept.mapper.primitive
+package com.kncept.mapper.primitives
 
 import aws.sdk.kotlin.services.dynamodb.model.AttributeValue
 import com.kncept.mapper.ObjectMapper

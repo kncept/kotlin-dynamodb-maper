@@ -6,11 +6,6 @@ plugins {
     signing
 }
 
-java {
-    withJavadocJar()
-    withSourcesJar()
-}
-
 val awsKotlinSdkVersion = "1.0.62"
 val junit5Version = "5.10.2"
 val kotlinCoroutineVersion = "1.7.3"

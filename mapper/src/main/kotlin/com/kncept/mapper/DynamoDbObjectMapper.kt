@@ -3,6 +3,10 @@ package com.kncept.mapper
 import aws.sdk.kotlin.services.dynamodb.model.AttributeValue
 import com.kncept.mapper.annotation.MappedBy
 import com.kncept.mapper.annotation.MappedCollection
+import com.kncept.mapper.java.math.JavaMathModule
+import com.kncept.mapper.java.time.JavaTimeModule
+import com.kncept.mapper.java.util.JavaUtilModule
+import com.kncept.mapper.primitives.PrimitivesModule
 import com.kncept.mapper.reflect.DataClassCreator
 import com.kncept.mapper.reflect.GenericObjectMapper
 import com.kncept.mapper.reflect.ReflectiveDataClassCreator
@@ -13,16 +17,21 @@ import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.findAnnotations
 import kotlin.reflect.full.isSubclassOf
 
-class DynamoDbObjectMapper : ObjectMapper {
+class DynamoDbObjectMapper(
+    initialModules: List<TypeMapperModule> =
+        listOf(
+            PrimitivesModule(),
+            JavaMathModule(),
+            JavaTimeModule(),
+            JavaUtilModule(),
+        )
+) : ObjectMapper {
 
   val objectCreators: MutableMap<KClass<out Any>, DataClassCreator<out Any>> = mutableMapOf()
   val typeMappers: MutableMap<KClass<out Any>, TypeMapper<out Any>> = mutableMapOf()
 
   init {
-    TypeMapper.primitiveTypeMappers().forEach { register(it) }
-    TypeMapper.javaMathTypeMappers().forEach { register(it) }
-    TypeMapper.javaUtilTypeMappers().forEach { register(it) }
-    TypeMapper.javaTimeTypeMappers().forEach { register(it) }
+    initialModules.forEach { register(it) }
   }
 
   fun <T : Any> objectCreator(type: KClass<T>): DataClassCreator<Any> {
@@ -176,6 +185,10 @@ class DynamoDbObjectMapper : ObjectMapper {
     }
     val mapper = typeMapper(type)
     return mapper.toAttribute(item, this)
+  }
+
+  fun register(module: TypeMapperModule) {
+    module.mappers().forEach { register(it) }
   }
 
   fun register(mapper: TypeMapper<out Any>) {

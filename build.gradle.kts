@@ -5,6 +5,7 @@ plugins {
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 tasks.wrapper { gradleVersion = "8.6" }
@@ -39,6 +40,9 @@ subprojects {
 
     java {
         sourceCompatibility = parent!!.java.sourceCompatibility
+        targetCompatibility = parent!!.java.targetCompatibility
+        withJavadocJar()
+        withSourcesJar()
     }
 
     repositories {

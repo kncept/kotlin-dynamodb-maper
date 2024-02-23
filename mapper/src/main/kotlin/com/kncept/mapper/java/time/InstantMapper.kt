@@ -6,7 +6,7 @@ import com.kncept.mapper.TypeMapper
 import java.time.Instant
 import kotlin.reflect.KClass
 
-class InstantMapper : TypeMapper<Instant> {
+class InstantMapper(val truncateTypesToEpochSecond: Boolean) : TypeMapper<Instant> {
   override fun type(): KClass<Instant> {
     return Instant::class
   }
@@ -16,10 +16,12 @@ class InstantMapper : TypeMapper<Instant> {
   }
 
   override fun toType(attribute: AttributeValue, mapper: ObjectMapper): Instant {
-    return Instant.ofEpochSecond(attribute.asN().toLong())
+    if (truncateTypesToEpochSecond) return Instant.ofEpochSecond(attribute.asN().toLong())
+    return Instant.parse(attribute.asN())
   }
 
   override fun toAttribute(item: Instant, mapper: ObjectMapper): AttributeValue {
-    return AttributeValue.N(item.epochSecond.toString())
+    if (truncateTypesToEpochSecond) return AttributeValue.N(item.epochSecond.toString())
+    return AttributeValue.N(item.toString())
   }
 }
