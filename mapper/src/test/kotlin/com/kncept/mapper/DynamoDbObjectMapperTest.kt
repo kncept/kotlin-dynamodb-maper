@@ -1,6 +1,7 @@
 package com.kncept.mapper
 
 import aws.sdk.kotlin.services.dynamodb.model.AttributeValue
+import com.kncept.mapper.annotation.MappedBy
 import com.kncept.mapper.annotation.MappedCollection
 import com.kncept.mapper.reflect.GenericObjectMapper
 import java.math.BigDecimal
@@ -62,6 +63,17 @@ class DynamoDbObjectMapperTest {
 
     reconstitutableAsserter.accept(ComplexTypes())
     reconstitutableAsserter.accept(RecursiveTypes())
+  }
+
+  @Test
+  fun respectsMappedBy() {
+    val objectMapper = DynamoDbObjectMapper()
+    val booleanSrc = MappedByBoolean()
+    val fromSrcAttributes = objectMapper.toAttributes(booleanSrc)
+    val stringCopy = objectMapper.toItem(MappedByString::class, fromSrcAttributes)
+
+    assertEquals(true, booleanSrc.value)
+    assertEquals("true", stringCopy.value)
   }
 
   class FakeEmptyTypesMapper : TypeMapper<EmptyTypes> {
@@ -178,4 +190,26 @@ class DynamoDbObjectMapperTest {
   )
 
   data class RecursiveTypes(val recursiveType: RecursiveTypes? = RecursiveTypes(null))
+
+  class BooleanAsStringMapper : TypeMapper<Boolean> {
+    override fun type(): KClass<Boolean> {
+      return Boolean::class
+    }
+
+    override fun toType(attribute: AttributeValue): Boolean {
+      return attribute.asS().toBoolean()
+    }
+
+    override fun attributeType(): KClass<out AttributeValue> {
+      return AttributeValue.S::class
+    }
+
+    override fun toAttribute(item: Boolean): AttributeValue {
+      return AttributeValue.S(item.toString())
+    }
+  }
+
+  data class MappedByBoolean(@MappedBy(BooleanAsStringMapper::class) val value: Boolean = true)
+
+  data class MappedByString(val value: String = "string")
 }
