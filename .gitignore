@@ -2,4 +2,6 @@
 .vscode
 .idea
 build/
+secring.gpg
 gradle.properties
+_gradle.properties
