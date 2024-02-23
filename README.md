@@ -16,6 +16,8 @@ Note you will also need to define dependencies, something like:
     implementation("aws.sdk.kotlin:aws-core:$awsKotlinSdkVersion")
     implementation("aws.sdk.kotlin:dynamodb:$awsKotlinSdkVersion")
 ```
+You _may_ need `implementation(kotlin("reflect"))`, I'm not sure.
+This will be tested and docs updated.
 
 ### Using the type mapper
 Create an instance. It comes pre-configured with a reasonable set of defaults.
