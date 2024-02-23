@@ -9,7 +9,7 @@ This project intends to make mapping between dynamo db types and domain types ea
 ### Build file
 In your build.gradle.kts file dependencies section
 ```kotlin
-    implementation("com.kncept.dynamodbmapper:dynamodbmapper:1.0.0")
+    implementation("com.kncept.ddb.mapper:mapper:1.0.0")
 ```
 Note you will also need to define dependencies, something like:
 ```kotlin
