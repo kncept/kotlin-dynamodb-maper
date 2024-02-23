@@ -100,6 +100,16 @@ class DynamoDbObjectMapperTest {
       val nullBool: Boolean? = null,
   )
 
+  enum class SimpleEnum {
+    first,
+    second,
+    third;
+
+    override fun toString(): String {
+      return "other"
+    }
+  }
+
   data class PrimitiveTypes(
       val string: String = UUID.randomUUID().toString(),
       val bool: Boolean = Math.random() < 0.5,
@@ -114,7 +124,8 @@ class DynamoDbObjectMapperTest {
               (Math.random() * Byte.MAX_VALUE).toInt().toByte(),
           ),
       val float: Float = Math.random().toFloat(),
-      val double: Double = Math.random()
+      val double: Double = Math.random(),
+      val enum: SimpleEnum = SimpleEnum.values().random(),
   )
 
   data class JavaMathTypes(
