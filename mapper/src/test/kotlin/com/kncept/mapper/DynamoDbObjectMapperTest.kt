@@ -63,6 +63,8 @@ class DynamoDbObjectMapperTest {
 
     reconstitutableAsserter.accept(ComplexTypes())
     reconstitutableAsserter.accept(RecursiveTypes())
+
+    reconstitutableAsserter.accept(WithMap())
   }
 
   @Test
@@ -223,4 +225,12 @@ class DynamoDbObjectMapperTest {
   data class MappedByBoolean(@MappedBy(BooleanAsStringMapper::class) val value: Boolean = true)
 
   data class MappedByString(val value: String = "string")
+
+  data class WithMap(
+      val mapType: Map<String, String> =
+          mapOf(
+              UUID.randomUUID().toString() to UUID.randomUUID().toString(),
+              System.currentTimeMillis().toString() to
+                  (Math.random() * Short.MAX_VALUE).toInt().toString())
+  )
 }

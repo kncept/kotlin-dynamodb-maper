@@ -7,10 +7,7 @@ import com.kncept.mapper.java.math.JavaMathModule
 import com.kncept.mapper.java.time.JavaTimeModule
 import com.kncept.mapper.java.util.JavaUtilModule
 import com.kncept.mapper.primitives.PrimitivesModule
-import com.kncept.mapper.reflect.DataClassCreator
-import com.kncept.mapper.reflect.EnumMapper
-import com.kncept.mapper.reflect.GenericObjectMapper
-import com.kncept.mapper.reflect.ReflectiveDataClassCreator
+import com.kncept.mapper.reflect.*
 import java.lang.IllegalStateException
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
@@ -37,6 +34,7 @@ class DynamoDbObjectMapper(
   var emitNulls: Boolean = false
   var automapObjects: Boolean = true
   var mapEnumsByName: Boolean = true
+  val javaMathNumericTypes: Boolean = true // unbox Maps to java.math or primitives
 
   init {
     initialModules.forEach { register(it) }
@@ -51,6 +49,11 @@ class DynamoDbObjectMapper(
     val mapper = typeMappers[type] as TypeMapper<Any>?
     if (mapper == null && type.isSubclassOf(Enum::class)) {
       val newMapper = EnumMapper(type, mapEnumsByName)
+      typeMappers[type] = newMapper
+      return newMapper as TypeMapper<Any>
+    }
+    if (mapper == null && type.isSubclassOf(Map::class)) {
+      val newMapper = MapMapper(this, javaMathNumericTypes)
       typeMappers[type] = newMapper
       return newMapper as TypeMapper<Any>
     }

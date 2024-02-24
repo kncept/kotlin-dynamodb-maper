@@ -5,7 +5,9 @@ import kotlin.reflect.KProperty1
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.primaryConstructor
 
-class ReflectiveDataClassCreator<T : Any>(private val type: KClass<T>) : DataClassCreator<T> {
+class ReflectiveDataClassCreator<T : Any>(
+    private val type: KClass<T>,
+) : DataClassCreator<T> {
 
   override fun type(): KClass<T> {
     return type
