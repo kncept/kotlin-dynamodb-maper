@@ -7,6 +7,7 @@ import kotlin.reflect.full.primaryConstructor
 
 class ReflectiveDataClassCreator<T : Any>(
     private val type: KClass<T>,
+    val filterNullArgsInConstruction: Boolean
 ) : DataClassCreator<T> {
 
   override fun type(): KClass<T> {
@@ -26,7 +27,17 @@ class ReflectiveDataClassCreator<T : Any>(
   }
 
   override fun create(args: Map<String, Any?>): T {
-    val mappedArgs = type.primaryConstructor!!.parameters.map { it to args[it.name] }.toMap()
-    return type.primaryConstructor!!.callBy(mappedArgs)
+    if (filterNullArgsInConstruction) {
+      val mappedArgs =
+          type.primaryConstructor!!
+              .parameters
+              .map { if (args[it.name] == null && it.isOptional) null else it to args[it.name] }
+              .filterNotNull()
+              .toMap()
+      return type.primaryConstructor!!.callBy(mappedArgs)
+    } else {
+      val mappedArgs = type.primaryConstructor!!.parameters.map { it to args[it.name] }.toMap()
+      return type.primaryConstructor!!.callBy(mappedArgs)
+    }
   }
 }

@@ -9,7 +9,10 @@ class DataClassCreatorTest {
   companion object {
     @JvmStatic
     fun implementations(): List<DataClassCreator<SampleType>> {
-      return listOf(ReflectiveDataClassCreator(SampleType::class))
+      return listOf(
+          ReflectiveDataClassCreator(SampleType::class, true),
+          ReflectiveDataClassCreator(SampleType::class, false),
+      )
     }
   }
 

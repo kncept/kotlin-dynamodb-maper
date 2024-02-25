@@ -34,15 +34,20 @@ class DynamoDbObjectMapper(
   var emitNulls: Boolean = false
   var automapObjects: Boolean = true
   var mapEnumsByName: Boolean = true
-  val javaMathNumericTypes: Boolean = true // unbox Maps to java.math or primitives
+  val javaMathNumericTypes: Boolean = false // unbox Maps to java.math or primitives
+
+  // if there is any logic in contstruction, setting this to 'true' will (probably) cause it to
+  // execute
+  val filterNullArgsInConstruction: Boolean = false
 
   init {
     initialModules.forEach { register(it) }
   }
 
   fun <T : Any> objectCreator(type: KClass<T>): DataClassCreator<Any> {
-    return objectCreators.getOrPut(type) { ReflectiveDataClassCreator(type) }
-        as DataClassCreator<Any>
+    return objectCreators.getOrPut(type) {
+      ReflectiveDataClassCreator(type, filterNullArgsInConstruction)
+    } as DataClassCreator<Any>
   }
 
   fun typeMapper(type: KClass<out Any>): TypeMapper<Any> {
