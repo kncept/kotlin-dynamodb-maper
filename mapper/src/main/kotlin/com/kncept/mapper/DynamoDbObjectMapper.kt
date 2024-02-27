@@ -3,6 +3,8 @@ package com.kncept.mapper
 import aws.sdk.kotlin.services.dynamodb.model.AttributeValue
 import com.kncept.mapper.annotation.MappedBy
 import com.kncept.mapper.annotation.MappedCollection
+import com.kncept.mapper.collections.ListMapper
+import com.kncept.mapper.collections.MapMapper
 import com.kncept.mapper.java.math.JavaMathModule
 import com.kncept.mapper.java.time.JavaTimeModule
 import com.kncept.mapper.java.util.JavaUtilModule
@@ -37,7 +39,8 @@ class DynamoDbObjectMapper(
   val javaMathNumericTypes: Boolean = false // unbox Maps to java.math or primitives
 
   // if there is any logic in contstruction, setting this to 'true' will (probably) cause it to
-  // execute
+  // execute.
+  // eg: can fail RecursiveTypes() test
   val filterNullArgsInConstruction: Boolean = false
 
   init {
@@ -50,7 +53,7 @@ class DynamoDbObjectMapper(
     } as DataClassCreator<Any>
   }
 
-  fun typeMapper(type: KClass<out Any>): TypeMapper<Any> {
+  fun typeMapper(type: KClass<out Any>): TypeMapper<Any>? {
     val mapper = typeMappers[type] as TypeMapper<Any>?
     if (mapper == null && type.isSubclassOf(Enum::class)) {
       val newMapper = EnumMapper(type, mapEnumsByName)
@@ -62,7 +65,11 @@ class DynamoDbObjectMapper(
       typeMappers[type] = newMapper
       return newMapper as TypeMapper<Any>
     }
-    if (mapper == null && automapObjects) {
+    if (mapper == null &&
+        automapObjects &&
+        type != Set::class &&
+        type != List::class &&
+        type != Array::class) {
       if (type.declaredMemberProperties.isNotEmpty()) {
         val newMapper = GenericObjectMapper(this, type)
         typeMappers[type] = newMapper
@@ -71,7 +78,7 @@ class DynamoDbObjectMapper(
         throw IllegalStateException("Unable to create mapper for type $type")
       }
     }
-    return mapper ?: throw IllegalStateException("Unable to lookup mapper for type $type")
+    return mapper
   }
 
   fun mappedByTypeMapper(mappedBy: MappedBy): TypeMapper<Any> {
@@ -97,39 +104,46 @@ class DynamoDbObjectMapper(
 
   fun <T : Any> asItem(property: KProperty<T>, attribute: AttributeValue): T? {
     if (attribute is AttributeValue.Null) return null
-    val type = property.returnType.classifier as KClass<out Any>
 
     val mappedBy = property.findAnnotations(MappedBy::class).firstOrNull()
-
     // handle an explicit MappedBy annotation on the property
     if (mappedBy != null) {
       val mapper = mappedByTypeMapper(mappedBy)
       return mapper.toType(attribute) as T?
     }
 
+    val type = property.returnType.classifier as KClass<out Any>
+    val mapper = typeMapper(type)
+    if (mapper != null) return mapper.toType(attribute) as T
+
     if (type.isSubclassOf(Set::class)) {
       val annotation =
           property.findAnnotations(MappedCollection::class).firstOrNull()
               ?: throw IllegalStateException(
                   "Collections must specify their @MappedCollection type")
-      when (typeMapper(annotation.componentType).attributeType()) {
-        AttributeValue.S::class ->
-            return attribute
-                .asSs()
-                .map { asItem(annotation.componentType, AttributeValue.S(it)) }
-                .toSet() as T
-        AttributeValue.N::class ->
-            return attribute
-                .asNs()
-                .map { asItem(annotation.componentType, AttributeValue.N(it)) }
-                .toSet() as T
-        AttributeValue.B::class ->
-            return attribute
-                .asBs()
-                .map { asItem(annotation.componentType, AttributeValue.B(it)) }
-                .toSet() as T
-        else ->
-            throw IllegalStateException("Sets of type not supported: ${annotation.componentType}")
+      typeMapper(annotation.componentType)?.let { collectionTypeMapper ->
+        when (collectionTypeMapper.attributeType()) {
+          AttributeValue.S::class ->
+              return attribute
+                  .asSs()
+                  .map { AttributeValue.S(it) }
+                  .map { collectionTypeMapper.toType(it) }
+                  .toSet() as T
+          AttributeValue.N::class ->
+              return attribute
+                  .asNs()
+                  .map { AttributeValue.N(it) }
+                  .map { collectionTypeMapper.toType(it) }
+                  .toSet() as T
+          AttributeValue.B::class ->
+              return attribute
+                  .asBs()
+                  .map { AttributeValue.B(it) }
+                  .map { collectionTypeMapper.toType(it) }
+                  .toSet() as T
+          else ->
+              throw IllegalStateException("Sets of type not supported: ${annotation.componentType}")
+        }
       }
     }
     if (type.isSubclassOf(List::class)) {
@@ -137,15 +151,11 @@ class DynamoDbObjectMapper(
           property.findAnnotations(MappedCollection::class).firstOrNull()
               ?: throw IllegalStateException(
                   "Collections must specify their @MappedCollection type")
-      return attribute.asL().map { asItem(annotation.componentType, it) } as T
+      typeMapper(annotation.componentType)?.let { collectionTypeMapper ->
+        return ListMapper(collectionTypeMapper).toType(attribute) as T
+      }
     }
-    return asItem(property.returnType.classifier as KClass<T>, attribute)
-  }
-
-  fun <T : Any> asItem(type: KClass<T>, attribute: AttributeValue): T? {
-    if (attribute is AttributeValue.Null) return null
-    val mapper = typeMapper(type)
-    return mapper.toType(attribute) as T
+    throw IllegalStateException("Unable to map type $type")
   }
 
   override fun <T : Any> toAttributes(item: T): Map<String, AttributeValue> {
@@ -169,26 +179,32 @@ class DynamoDbObjectMapper(
   fun asAttribute(property: KProperty<out Any>, item: Any?): AttributeValue? {
     if (item == null && emitNulls) return AttributeValue.Null(true)
     if (item == null) return null
-    val type = property.returnType.classifier as KClass<out Any>
-    val mappedBy = property.findAnnotations(MappedBy::class).firstOrNull()
 
+    val mappedBy = property.findAnnotations(MappedBy::class).firstOrNull()
     // handle an explicit MappedBy annotation on the property
     if (mappedBy != null) {
       val mapper = mappedByTypeMapper(mappedBy)
       return mapper.toAttribute(item)
     }
+
+    val type = property.returnType.classifier as KClass<out Any>
+    val mapper = typeMapper(type)
+    if (mapper != null) return mapper.toAttribute(item)
+
     if (type.isSubclassOf(Set::class)) {
       val annotation =
           property.findAnnotations(MappedCollection::class).firstOrNull()
               ?: throw IllegalStateException(
                   "Collections must specify their @MappedCollection type")
-      val list = (item as Set<*>).map { asAttribute(annotation.componentType, it) }.filterNotNull()
-      when (typeMapper(annotation.componentType).attributeType()) {
-        AttributeValue.S::class -> return AttributeValue.Ss(list.map { it.asS() })
-        AttributeValue.N::class -> return AttributeValue.Ns(list.map { it.asN() })
-        AttributeValue.B::class -> return AttributeValue.Bs(list.map { it.asB() })
-        else ->
-            throw IllegalStateException("Sets of type not supported: ${annotation.componentType}")
+      typeMapper(annotation.componentType)?.let { collectionTypeMapper ->
+        val list = (item as Set<*>).map { collectionTypeMapper.toAttribute(it!!) }
+        when (collectionTypeMapper.attributeType()) {
+          AttributeValue.S::class -> return AttributeValue.Ss(list.map { it.asS() })
+          AttributeValue.N::class -> return AttributeValue.Ns(list.map { it.asN() })
+          AttributeValue.B::class -> return AttributeValue.Bs(list.map { it.asB() })
+          else ->
+              throw IllegalStateException("Sets of type not supported: ${annotation.componentType}")
+        }
       }
     }
     if (type.isSubclassOf(List::class)) {
@@ -196,24 +212,12 @@ class DynamoDbObjectMapper(
           property.findAnnotations(MappedCollection::class).firstOrNull()
               ?: throw IllegalStateException(
                   "Collections must specify their @MappedCollection type")
-      val list = (item as List<*>).map { asAttribute(annotation.componentType, it) }.filterNotNull()
-      return AttributeValue.L(list)
+      typeMapper(annotation.componentType)?.let { collectionTypeMapper ->
+        return ListMapper(collectionTypeMapper).toAttribute(item as List<Any>)
+      }
     }
-    return asAttribute(type, item)
-  }
 
-  fun asAttribute(type: KClass<out Any>, item: Any?): AttributeValue? {
-    if (item == null && emitNulls) return AttributeValue.Null(true)
-    if (item == null) return null
-
-    // handle an explicit MappedBy annotation on the class
-    val mappedBy = type.findAnnotations(MappedBy::class).firstOrNull()
-    if (mappedBy != null) {
-      val mapper = typeMapper(mappedBy.typeMapper)
-      return mapper.toAttribute(item)
-    }
-    val mapper = typeMapper(type)
-    return mapper.toAttribute(item)
+    throw IllegalStateException("Unable to map type $type")
   }
 
   fun register(module: TypeMapperModule) {

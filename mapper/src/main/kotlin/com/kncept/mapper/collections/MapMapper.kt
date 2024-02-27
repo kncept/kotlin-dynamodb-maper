@@ -1,4 +1,4 @@
-package com.kncept.mapper.reflect
+package com.kncept.mapper.collections
 
 import aws.sdk.kotlin.services.dynamodb.model.AttributeValue
 import com.kncept.mapper.DynamoDbObjectMapper
@@ -31,11 +31,10 @@ class MapMapper(
     return AttributeValue.M(
         item
             .map { entry ->
-              mapper.asAttribute(entry.value::class, entry.value)?.let { value ->
-                entry.key to value
-              }
+              val type = entry.value::class
+              val typeMapper = mapper.typeMapper(type)!!
+              entry.key to typeMapper.toAttribute(entry.value)
             }
-            .filterNotNull()
             .toMap())
   }
 
@@ -45,11 +44,11 @@ class MapMapper(
     else if (value is AttributeValue.N) {
       val n = value.asN()
       if (javaMathNumericTypes) {
-        if (n.contains(".")) mapper.asItem(BigDecimal::class, value)
-        else mapper.asItem(BigInteger::class, value)
+        if (n.contains(".")) mapper.typeMapper(BigDecimal::class)!!.toType(value)
+        else mapper.typeMapper(BigInteger::class)!!.toType(value)
       } else {
-        if (n.contains(".")) mapper.asItem(Double::class, value)
-        else mapper.asItem(Long::class, value)
+        if (n.contains(".")) mapper.typeMapper(Double::class)!!.toType(value)
+        else mapper.typeMapper(Long::class)!!.toType(value)
       }
           as Any
     } else if (value is AttributeValue.Bool) value.asBool()

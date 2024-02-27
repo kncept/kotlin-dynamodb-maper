@@ -24,7 +24,7 @@ class DynamoDbObjectMapperTest {
     objectMapper.register(FakeEmptyTypesMapper())
     val emptyTypeMapper = objectMapper.typeMapper(EmptyTypes::class)
     assertNotNull(emptyTypeMapper)
-    assertEquals(FakeEmptyTypesMapper::class, emptyTypeMapper::class)
+    assertEquals(FakeEmptyTypesMapper::class, emptyTypeMapper!!::class)
   }
 
   @Test
@@ -32,7 +32,7 @@ class DynamoDbObjectMapperTest {
     val objectMapper = DynamoDbObjectMapper()
     val emptyTypeMapper = objectMapper.typeMapper(EmptyTypes::class)
     assertNotNull(emptyTypeMapper)
-    assertEquals(GenericObjectMapper::class, emptyTypeMapper::class)
+    assertEquals(GenericObjectMapper::class, emptyTypeMapper!!::class)
   }
 
   @Test
@@ -53,6 +53,8 @@ class DynamoDbObjectMapperTest {
     }
 
     reconstitutableAsserter.accept(PrimitiveTypes())
+    reconstitutableAsserter.accept(PrimitiveArrayTypes())
+
     reconstitutableAsserter.accept(EmptyTypes())
     reconstitutableAsserter.accept(JavaMathTypes())
     reconstitutableAsserter.accept(JavaUtilTypes())
@@ -65,6 +67,7 @@ class DynamoDbObjectMapperTest {
     reconstitutableAsserter.accept(RecursiveTypes())
 
     reconstitutableAsserter.accept(WithMap())
+    //    reconstitutableAsserter.accept(ArrayTypes())
   }
 
   @Test
@@ -119,16 +122,79 @@ class DynamoDbObjectMapperTest {
       val short: Short = (Math.random() * Short.MAX_VALUE).toInt().toShort(),
       val int: Int = (Math.random() * Int.MAX_VALUE).toInt(),
       val long: Long = (Math.random() * Long.MAX_VALUE).toLong(),
-      val byteArray: ByteArray =
+      val float: Float = Math.random().toFloat(),
+      val double: Double = Math.random(),
+      val enum: SimpleEnum = SimpleEnum.values().random(),
+  )
+
+  data class PrimitiveArrayTypes(
+      val booleans: BooleanArray = booleanArrayOf(Math.random() > 0.5, Math.random() > 0.5),
+      val bytes: ByteArray =
           byteArrayOf(
               (Math.random() * Byte.MAX_VALUE).toInt().toByte(),
               (Math.random() * Byte.MAX_VALUE).toInt().toByte(),
               (Math.random() * Byte.MAX_VALUE).toInt().toByte(),
           ),
-      val float: Float = Math.random().toFloat(),
-      val double: Double = Math.random(),
-      val enum: SimpleEnum = SimpleEnum.values().random(),
-  )
+      val chars: CharArray = UUID.randomUUID().toString().toCharArray(),
+      val doubles: DoubleArray =
+          doubleArrayOf(
+              Math.random(),
+              Math.random(),
+              Math.random(),
+          ),
+      val floats: FloatArray =
+          floatArrayOf(
+              Math.random().toFloat(),
+              Math.random().toFloat(),
+              Math.random().toFloat(),
+          ),
+      val ints: IntArray =
+          intArrayOf(
+              (Math.random() * Int.MAX_VALUE).toInt(),
+              (Math.random() * Int.MAX_VALUE).toInt(),
+              (Math.random() * Int.MAX_VALUE).toInt(),
+          ),
+      val longs: LongArray =
+          longArrayOf(
+              (Math.random() * Long.MAX_VALUE).toLong(),
+              (Math.random() * Long.MAX_VALUE).toLong(),
+              (Math.random() * Long.MAX_VALUE).toLong(),
+          ),
+      val shorts: ShortArray =
+          shortArrayOf(
+              (Math.random() * Short.MAX_VALUE).toInt().toShort(),
+              (Math.random() * Short.MAX_VALUE).toInt().toShort(),
+              (Math.random() * Short.MAX_VALUE).toInt().toShort(),
+          )
+  ) {
+    override fun equals(other: Any?): Boolean {
+      if (this === other) return true
+      if (other !is PrimitiveArrayTypes) return false
+
+      if (!booleans.contentEquals(other.booleans)) return false
+      if (!bytes.contentEquals(other.bytes)) return false
+      if (!chars.contentEquals(other.chars)) return false
+      if (!doubles.contentEquals(other.doubles)) return false
+      if (!floats.contentEquals(other.floats)) return false
+      if (!ints.contentEquals(other.ints)) return false
+      if (!longs.contentEquals(other.longs)) return false
+      if (!shorts.contentEquals(other.shorts)) return false
+
+      return true
+    }
+
+    override fun hashCode(): Int {
+      var result = booleans.contentHashCode()
+      result = 31 * result + bytes.contentHashCode()
+      result = 31 * result + chars.contentHashCode()
+      result = 31 * result + doubles.contentHashCode()
+      result = 31 * result + floats.contentHashCode()
+      result = 31 * result + ints.contentHashCode()
+      result = 31 * result + longs.contentHashCode()
+      result = 31 * result + shorts.contentHashCode()
+      return result
+    }
+  }
 
   data class JavaMathTypes(
       val bigInteger: BigInteger =
@@ -233,4 +299,16 @@ class DynamoDbObjectMapperTest {
               System.currentTimeMillis().toString() to
                   (Math.random() * Short.MAX_VALUE).toInt().toString())
   )
+
+  //  data class ArrayTypes(
+  //      val nullableStrings: Array<String>? = null,
+  //      val emptyStrings: Array<String> = arrayOf(),
+  //      val strings: Array<String> = arrayOf("one", "two"),
+  //      val uuids: Array<UUID> = arrayOf(UUID.randomUUID(), UUID.randomUUID()),
+  //      val enums: Array<SimpleEnum> =
+  //          arrayOf(
+  //              DynamoDbObjectMapperTest.SimpleEnum.first,
+  //              DynamoDbObjectMapperTest.SimpleEnum.first,
+  //              DynamoDbObjectMapperTest.SimpleEnum.values().random()),
+  //  )
 }
