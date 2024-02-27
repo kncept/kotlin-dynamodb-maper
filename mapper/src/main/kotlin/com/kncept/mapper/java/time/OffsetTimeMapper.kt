@@ -17,7 +17,7 @@ class OffsetTimeMapper : TypeMapper<OffsetTime> {
     return AttributeValue.S::class
   }
 
-  override fun toType(attribute: AttributeValue): OffsetTime {
+  override fun toItem(attribute: AttributeValue): OffsetTime {
     return OffsetTime.parse(attribute.asS(), formatter)
   }
 

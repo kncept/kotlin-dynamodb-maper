@@ -14,7 +14,7 @@ class DurationMapper : TypeMapper<Duration> {
     return AttributeValue.S::class
   }
 
-  override fun toType(attribute: AttributeValue): Duration {
+  override fun toItem(attribute: AttributeValue): Duration {
     return Duration.parse(attribute.asS())
   }
 

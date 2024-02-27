@@ -105,7 +105,7 @@ class DynamoDbObjectMapperTest {
       TODO("Not yet implemented")
     }
 
-    override fun toType(attribute: AttributeValue): EmptyTypes {
+    override fun toItem(attribute: AttributeValue): EmptyTypes {
       TODO("Not yet implemented")
     }
 
@@ -297,7 +297,7 @@ class DynamoDbObjectMapperTest {
       return Boolean::class
     }
 
-    override fun toType(attribute: AttributeValue): Boolean {
+    override fun toItem(attribute: AttributeValue): Boolean {
       return attribute.asS().toBoolean()
     }
 

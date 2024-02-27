@@ -14,7 +14,7 @@ class ZoneIdMapper : TypeMapper<ZoneId> {
     return AttributeValue.S::class
   }
 
-  override fun toType(attribute: AttributeValue): ZoneId {
+  override fun toItem(attribute: AttributeValue): ZoneId {
     return ZoneId.of(attribute.asS())
   }
 

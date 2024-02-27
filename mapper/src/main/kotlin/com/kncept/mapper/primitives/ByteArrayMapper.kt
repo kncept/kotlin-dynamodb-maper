@@ -13,7 +13,7 @@ class ByteArrayMapper : TypeMapper<ByteArray> {
     return AttributeValue.B::class
   }
 
-  override fun toType(attribute: AttributeValue): ByteArray {
+  override fun toItem(attribute: AttributeValue): ByteArray {
     return attribute.asB()
   }
 

@@ -16,8 +16,8 @@ class IntArrayMapper : TypeMapper<IntArray> {
     return listMapper.attributeType()
   }
 
-  override fun toType(attribute: AttributeValue): IntArray {
-    return listMapper.toType(attribute).toIntArray()
+  override fun toItem(attribute: AttributeValue): IntArray {
+    return listMapper.toItem(attribute).toIntArray()
   }
 
   override fun toAttribute(item: IntArray): AttributeValue {

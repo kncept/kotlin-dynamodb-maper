@@ -16,8 +16,8 @@ class LongArrayMapper : TypeMapper<LongArray> {
     return listMapper.attributeType()
   }
 
-  override fun toType(attribute: AttributeValue): LongArray {
-    return listMapper.toType(attribute).toLongArray()
+  override fun toItem(attribute: AttributeValue): LongArray {
+    return listMapper.toItem(attribute).toLongArray()
   }
 
   override fun toAttribute(item: LongArray): AttributeValue {

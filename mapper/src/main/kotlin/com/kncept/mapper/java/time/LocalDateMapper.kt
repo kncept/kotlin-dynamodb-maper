@@ -17,7 +17,7 @@ class LocalDateMapper : TypeMapper<LocalDate> {
     return AttributeValue.S::class
   }
 
-  override fun toType(attribute: AttributeValue): LocalDate {
+  override fun toItem(attribute: AttributeValue): LocalDate {
     return LocalDate.parse(attribute.asS(), formatter)
   }
 

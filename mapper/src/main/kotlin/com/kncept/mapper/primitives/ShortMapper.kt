@@ -13,7 +13,7 @@ class ShortMapper : TypeMapper<Short> {
     return AttributeValue.N::class
   }
 
-  override fun toType(attribute: AttributeValue): Short {
+  override fun toItem(attribute: AttributeValue): Short {
     return attribute.asN().toShort()
   }
 

@@ -13,7 +13,7 @@ class LongMapper : TypeMapper<Long> {
     return AttributeValue.N::class
   }
 
-  override fun toType(attribute: AttributeValue): Long {
+  override fun toItem(attribute: AttributeValue): Long {
     return attribute.asN().toLong()
   }
 

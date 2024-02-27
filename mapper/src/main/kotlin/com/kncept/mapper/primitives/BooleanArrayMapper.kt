@@ -13,7 +13,7 @@ class BooleanArrayMapper : TypeMapper<BooleanArray> {
     return AttributeValue.B::class
   }
 
-  override fun toType(attribute: AttributeValue): BooleanArray {
+  override fun toItem(attribute: AttributeValue): BooleanArray {
     return attribute.asB().map { it.toInt() == 1 }.toBooleanArray()
   }
 

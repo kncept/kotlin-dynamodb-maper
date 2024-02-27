@@ -19,7 +19,7 @@ class EnumMapper<T : Any>(
   val nameProperty = type.memberProperties.firstOrNull { it.name == "name" }!!
   val ordinalProperty = type.memberProperties.firstOrNull { it.name == "ordinal" }!!
 
-  override fun toType(attribute: AttributeValue): T {
+  override fun toItem(attribute: AttributeValue): T {
     if (attribute is AttributeValue.N) {
       val values: Array<T> = valuesFunction.call() as Array<T>
       val ordinal = attribute.asN().toInt()

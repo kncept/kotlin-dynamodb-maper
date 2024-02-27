@@ -15,7 +15,7 @@ class LocalDateTimeMapper : TypeMapper<LocalDateTime> {
     return AttributeValue.S::class
   }
 
-  override fun toType(attribute: AttributeValue): LocalDateTime {
+  override fun toItem(attribute: AttributeValue): LocalDateTime {
     // epoch second
     if (attribute is AttributeValue.N) {
       return LocalDateTime.ofEpochSecond(attribute.asN().toLong(), 0, ZoneOffset.UTC)

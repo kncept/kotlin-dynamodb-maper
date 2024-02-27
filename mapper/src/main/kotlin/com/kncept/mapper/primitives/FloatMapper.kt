@@ -13,7 +13,7 @@ class FloatMapper : TypeMapper<Float> {
     return AttributeValue.N::class
   }
 
-  override fun toType(attribute: AttributeValue): Float {
+  override fun toItem(attribute: AttributeValue): Float {
     return attribute.asN().toFloat()
   }
 

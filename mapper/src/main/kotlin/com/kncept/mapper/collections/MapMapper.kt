@@ -16,7 +16,7 @@ class MapMapper(
     return Map::class as KClass<Map<String, out Any>>
   }
 
-  override fun toType(attribute: AttributeValue): Map<String, out Any> {
+  override fun toItem(attribute: AttributeValue): Map<String, out Any> {
     return attribute
         .asM()
         .map { entry -> entry.key to unboundAttributeToProbableType(entry.value) }
@@ -39,16 +39,16 @@ class MapMapper(
   }
 
   fun unboundAttributeToProbableType(value: AttributeValue): Any {
-    return if (value is AttributeValue.M) toType(value)
+    return if (value is AttributeValue.M) toItem(value)
     else if (value is AttributeValue.S) value.asS()
     else if (value is AttributeValue.N) {
       val n = value.asN()
       if (javaMathNumericTypes) {
-        if (n.contains(".")) mapper.typeMapper(BigDecimal::class)!!.toType(value)
-        else mapper.typeMapper(BigInteger::class)!!.toType(value)
+        if (n.contains(".")) mapper.typeMapper(BigDecimal::class)!!.toItem(value)
+        else mapper.typeMapper(BigInteger::class)!!.toItem(value)
       } else {
-        if (n.contains(".")) mapper.typeMapper(Double::class)!!.toType(value)
-        else mapper.typeMapper(Long::class)!!.toType(value)
+        if (n.contains(".")) mapper.typeMapper(Double::class)!!.toItem(value)
+        else mapper.typeMapper(Long::class)!!.toItem(value)
       }
           as Any
     } else if (value is AttributeValue.Bool) value.asBool()

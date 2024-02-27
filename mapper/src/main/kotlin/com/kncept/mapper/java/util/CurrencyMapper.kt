@@ -14,7 +14,7 @@ class CurrencyMapper : TypeMapper<Currency> {
     return AttributeValue.S::class
   }
 
-  override fun toType(attribute: AttributeValue): Currency {
+  override fun toItem(attribute: AttributeValue): Currency {
     return Currency.getInstance(attribute.asS())
   }
 

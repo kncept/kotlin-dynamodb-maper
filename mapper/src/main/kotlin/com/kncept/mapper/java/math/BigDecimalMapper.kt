@@ -14,7 +14,7 @@ class BigDecimalMapper : TypeMapper<BigDecimal> {
     return AttributeValue.N::class
   }
 
-  override fun toType(attribute: AttributeValue): BigDecimal {
+  override fun toItem(attribute: AttributeValue): BigDecimal {
     if (attribute is AttributeValue.S) return BigDecimal(attribute.asS())
     return BigDecimal(attribute.asN())
   }

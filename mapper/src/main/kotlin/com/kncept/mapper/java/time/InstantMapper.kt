@@ -14,7 +14,7 @@ class InstantMapper(val truncateTypesToEpochSecond: Boolean) : TypeMapper<Instan
     return AttributeValue.N::class
   }
 
-  override fun toType(attribute: AttributeValue): Instant {
+  override fun toItem(attribute: AttributeValue): Instant {
     if (truncateTypesToEpochSecond) return Instant.ofEpochSecond(attribute.asN().toLong())
     return Instant.parse(attribute.asN())
   }

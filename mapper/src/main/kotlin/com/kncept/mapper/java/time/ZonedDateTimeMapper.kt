@@ -17,7 +17,7 @@ class ZonedDateTimeMapper : TypeMapper<ZonedDateTime> {
     return AttributeValue.S::class
   }
 
-  override fun toType(attribute: AttributeValue): ZonedDateTime {
+  override fun toItem(attribute: AttributeValue): ZonedDateTime {
     return ZonedDateTime.parse(attribute.asS(), formatter)
   }
 

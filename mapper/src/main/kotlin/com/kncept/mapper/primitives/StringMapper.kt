@@ -13,7 +13,7 @@ class StringMapper : TypeMapper<String> {
     return AttributeValue.S::class
   }
 
-  override fun toType(attribute: AttributeValue): String {
+  override fun toItem(attribute: AttributeValue): String {
     return attribute.asS()
   }
 

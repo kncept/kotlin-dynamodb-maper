@@ -50,6 +50,16 @@ then register it by calling
 ```kotlin
     mapper.register(MyTypeMapper())
 ```
+Or you can use the annotation, at the field or class level
+```kotlin
+    @MappedBy(MyTypeMapper::class)
+```
+Collections and arrays are supported, but may not work for all cases, due to generics.<br>
+If auto detection fails, you can speficy the type with the following annotation
+```kotlin
+    @MappedCollection(MyType::class) val things: List<*>
+```
+
 
 #### Mapper config
 There are some configuration options available for the Mapper. Just update the option and it will take effect.

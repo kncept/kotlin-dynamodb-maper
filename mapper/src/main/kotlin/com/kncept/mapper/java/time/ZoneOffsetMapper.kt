@@ -14,7 +14,7 @@ class ZoneOffsetMapper : TypeMapper<ZoneOffset> {
     return AttributeValue.S::class
   }
 
-  override fun toType(attribute: AttributeValue): ZoneOffset {
+  override fun toItem(attribute: AttributeValue): ZoneOffset {
     return ZoneOffset.of(attribute.asS())
   }
 

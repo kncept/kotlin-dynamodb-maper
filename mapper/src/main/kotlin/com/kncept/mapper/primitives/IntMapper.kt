@@ -13,7 +13,7 @@ class IntMapper : TypeMapper<Int> {
     return AttributeValue.N::class
   }
 
-  override fun toType(attribute: AttributeValue): Int {
+  override fun toItem(attribute: AttributeValue): Int {
     return attribute.asN().toInt()
   }
 

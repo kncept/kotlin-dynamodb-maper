@@ -16,8 +16,8 @@ class DoubleArrayMapper : TypeMapper<DoubleArray> {
     return listMapper.attributeType()
   }
 
-  override fun toType(attribute: AttributeValue): DoubleArray {
-    return listMapper.toType(attribute).toDoubleArray()
+  override fun toItem(attribute: AttributeValue): DoubleArray {
+    return listMapper.toItem(attribute).toDoubleArray()
   }
 
   override fun toAttribute(item: DoubleArray): AttributeValue {

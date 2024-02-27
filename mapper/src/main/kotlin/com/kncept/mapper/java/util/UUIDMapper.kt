@@ -14,7 +14,7 @@ class UUIDMapper : TypeMapper<UUID> {
     return AttributeValue.S::class
   }
 
-  override fun toType(attribute: AttributeValue): UUID {
+  override fun toItem(attribute: AttributeValue): UUID {
     if (attribute is AttributeValue.B) return UUID.nameUUIDFromBytes(attribute.asB())
     return UUID.fromString(attribute.asS())
   }

@@ -14,7 +14,7 @@ class BigIntegerMapper : TypeMapper<BigInteger> {
     return AttributeValue.N::class
   }
 
-  override fun toType(attribute: AttributeValue): BigInteger {
+  override fun toItem(attribute: AttributeValue): BigInteger {
     if (attribute is AttributeValue.S) return BigInteger(attribute.asS())
     return BigInteger(attribute.asN())
   }

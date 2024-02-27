@@ -17,7 +17,7 @@ class DateMapper : TypeMapper<Date> {
     return AttributeValue.S::class
   }
 
-  override fun toType(attribute: AttributeValue): Date {
+  override fun toItem(attribute: AttributeValue): Date {
     return formatter.parse(attribute.asS())
   }
 

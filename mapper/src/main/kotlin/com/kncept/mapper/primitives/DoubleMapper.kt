@@ -13,7 +13,7 @@ class DoubleMapper : TypeMapper<Double> {
     return AttributeValue.N::class
   }
 
-  override fun toType(attribute: AttributeValue): Double {
+  override fun toItem(attribute: AttributeValue): Double {
     return attribute.asN().toDouble()
   }
 

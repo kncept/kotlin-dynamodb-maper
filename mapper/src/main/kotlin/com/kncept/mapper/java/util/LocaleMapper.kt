@@ -14,7 +14,7 @@ class LocaleMapper : TypeMapper<Locale> {
     return AttributeValue.S::class
   }
 
-  override fun toType(attribute: AttributeValue): Locale {
+  override fun toItem(attribute: AttributeValue): Locale {
     return Locale.forLanguageTag(attribute.asS())
   }
 

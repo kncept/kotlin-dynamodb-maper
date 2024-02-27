@@ -13,7 +13,7 @@ class GenericObjectMapper<T : Any>(
     return type
   }
 
-  override fun toType(attribute: AttributeValue): T {
+  override fun toItem(attribute: AttributeValue): T {
     val attributes: Map<String, AttributeValue> = attribute.asM()
 
     val creator = mapper.objectCreator(type)

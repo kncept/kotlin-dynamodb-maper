@@ -20,6 +20,15 @@ import kotlin.reflect.full.findAnnotations
 import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.primaryConstructor
 
+/**
+ * Main entry point for API usage<br>
+ *
+ * Create, Customise and Use a DynamoDbObjectMapper()<br>
+ *
+ * Note that you can override the initial, default set of modules. This is not recommended, but if
+ * you really really REALLY need to, you can. Though I'd strongly recommend including at least the
+ * PrimitivesModule() in whatever else you are doing.
+ */
 class DynamoDbObjectMapper(
     initialModules: List<TypeMapperModule> =
         listOf(
@@ -35,13 +44,26 @@ class DynamoDbObjectMapper(
   private val typeMappers: MutableMap<KClass<out Any>, TypeMapper<out Any>> = mutableMapOf()
   private val mappedByCache: MutableMap<KClass<out Any>, TypeMapper<out Any>> = mutableMapOf()
 
+  /**
+   * Config: emitNulls<br> controls emitting 'null = true' attributes, or emitting nothing at all
+   */
   var emitNulls: Boolean = false
-  var mapEnumsByName: Boolean = true
-  val javaMathNumericTypes: Boolean = false // unbox Maps to java.math or primitives
 
-  // if there is any logic in contstruction, setting this to 'true' will (probably) cause it to
-  // execute.
-  // eg: can fail RecursiveTypes() test
+  /** Config: mapEnumsByName<br> controls emitting enums by name or by ordinal index */
+  var mapEnumsByName: Boolean = true
+
+  /**
+   * Config: javaMathNumericTypes<br> controls unboxing generic 'number' types to Long/Double, or
+   * BigInteger/BigDecimal
+   */
+  val javaMathNumericTypes: Boolean = true // unbox Maps to java.math or primitives
+
+  /**
+   * Config: filterNullArgsInConstruction<br> controls if null values are pre-filtered out of a
+   * constructor<br> WARNING: If you have any constructor logic for defaults, this setting will
+   * affect it's behaviour.<br>
+   */
+  // Play with the RecursiveTypes() test to see how this can effect things
   val filterNullArgsInConstruction: Boolean = false
 
   init {
@@ -119,40 +141,40 @@ class DynamoDbObjectMapper(
     if (attribute is AttributeValue.Null) return null
 
     val mappedByMapper = mappedByTypeMapper(property, type as KClass<Any>)
-    if (mappedByMapper != null) return mappedByMapper.toType(attribute) as T
+    if (mappedByMapper != null) return mappedByMapper.toItem(attribute) as T
 
     if (isCollectionType(type)) {
       if (type.isSubclassOf(Set::class)) {
         val componentType = collectionComponentType(property as KProperty<Any>)
         typeMapper(componentType)?.let { collectionTypeMapper ->
-          return SetMapper(collectionTypeMapper).toType(attribute) as T
+          return SetMapper(collectionTypeMapper).toItem(attribute) as T
         }
       }
       if (type.isSubclassOf(List::class)) {
         val componentType = collectionComponentType(property as KProperty<Any>)
         typeMapper(componentType)?.let { collectionTypeMapper ->
-          return ListMapper(collectionTypeMapper).toType(attribute) as T
+          return ListMapper(collectionTypeMapper).toItem(attribute) as T
         }
       }
       if (type.java.isArray) { // type.isSubclassOf(Array::class) << doesn't work :/
         val componentType = collectionComponentType(property as KProperty<Any>)
         typeMapper(componentType)?.let { collectionTypeMapper ->
-          return ArrayMapper(collectionTypeMapper).toType(attribute) as T
+          return ArrayMapper(collectionTypeMapper).toItem(attribute) as T
         }
       }
       if (type.isSubclassOf(Map::class)) {
-        return MapMapper(this, javaMathNumericTypes).toType(attribute) as T
+        return MapMapper(this, javaMathNumericTypes).toItem(attribute) as T
       }
       throw IllegalStateException("unable to map to item collection of type $type")
     }
 
     val mapper = typeMapper(type)
-    if (mapper != null) return mapper.toType(attribute) as T
+    if (mapper != null) return mapper.toItem(attribute) as T
 
     if (type.declaredMemberProperties.isNotEmpty()) {
       val newMapper = GenericObjectMapper(this, type)
       typeMappers[type] = newMapper
-      return newMapper.toType(attribute) as T
+      return newMapper.toItem(attribute) as T
     }
 
     throw IllegalStateException("Unable to convert attribute to item: $type")

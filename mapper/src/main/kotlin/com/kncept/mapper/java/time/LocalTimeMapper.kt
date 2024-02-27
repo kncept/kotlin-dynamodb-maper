@@ -17,7 +17,7 @@ class LocalTimeMapper : TypeMapper<LocalTime> {
     return AttributeValue.S::class
   }
 
-  override fun toType(attribute: AttributeValue): LocalTime {
+  override fun toItem(attribute: AttributeValue): LocalTime {
     return LocalTime.parse(attribute.asS(), formatter)
   }
 

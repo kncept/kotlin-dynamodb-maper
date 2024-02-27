@@ -13,7 +13,7 @@ class CharArrayMapper : TypeMapper<CharArray> {
     return AttributeValue.S::class
   }
 
-  override fun toType(attribute: AttributeValue): CharArray {
+  override fun toItem(attribute: AttributeValue): CharArray {
     return attribute.asS().toCharArray()
   }
 

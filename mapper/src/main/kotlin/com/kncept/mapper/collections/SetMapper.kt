@@ -13,25 +13,25 @@ class SetMapper<T : Any>(
     return Set::class as KClass<Set<T>>
   }
 
-  override fun toType(attribute: AttributeValue): Set<T> {
+  override fun toItem(attribute: AttributeValue): Set<T> {
     return when (collectionTypeMapper.attributeType()) {
       AttributeValue.S::class ->
           attribute
               .asSs()
               .map { AttributeValue.S(it) }
-              .map { collectionTypeMapper.toType(it) }
+              .map { collectionTypeMapper.toItem(it) }
               .toSet()
       AttributeValue.N::class ->
           attribute
               .asNs()
               .map { AttributeValue.N(it) }
-              .map { collectionTypeMapper.toType(it) }
+              .map { collectionTypeMapper.toItem(it) }
               .toSet()
       AttributeValue.B::class ->
           attribute
               .asBs()
               .map { AttributeValue.B(it) }
-              .map { collectionTypeMapper.toType(it) }
+              .map { collectionTypeMapper.toItem(it) }
               .toSet()
       else ->
           throw IllegalStateException(

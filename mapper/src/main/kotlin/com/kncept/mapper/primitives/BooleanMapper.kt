@@ -13,7 +13,7 @@ class BooleanMapper : TypeMapper<Boolean> {
     return AttributeValue.Bool::class
   }
 
-  override fun toType(attribute: AttributeValue): Boolean {
+  override fun toItem(attribute: AttributeValue): Boolean {
     if (attribute is AttributeValue.S) return attribute.asS().toBoolean()
     return attribute.asBool()
   }

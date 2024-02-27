@@ -12,8 +12,8 @@ class ArrayMapper<T : Any>(
     return Array::class as KClass<Array<T>>
   }
 
-  override fun toType(attribute: AttributeValue): Array<T> {
-    val list = attribute.asL().map { collectionTypeMapper.toType(it) }
+  override fun toItem(attribute: AttributeValue): Array<T> {
+    val list = attribute.asL().map { collectionTypeMapper.toItem(it) }
     val array =
         java.lang.reflect.Array.newInstance(collectionTypeMapper.type().java, list.size) as Array<T>
     list.forEachIndexed { index, item -> array[index] = item }

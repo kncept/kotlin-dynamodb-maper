@@ -13,7 +13,7 @@ class ByteMapper : TypeMapper<Byte> {
     return AttributeValue.N::class
   }
 
-  override fun toType(attribute: AttributeValue): Byte {
+  override fun toItem(attribute: AttributeValue): Byte {
     return attribute.asN().toByte()
   }
 

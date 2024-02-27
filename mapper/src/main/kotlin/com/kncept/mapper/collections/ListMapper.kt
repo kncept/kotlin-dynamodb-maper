@@ -12,8 +12,8 @@ class ListMapper<T : Any>(
     return List::class as KClass<List<T>>
   }
 
-  override fun toType(attribute: AttributeValue): List<T> {
-    return attribute.asL().map { collectionTypeMapper.toType(it) }
+  override fun toItem(attribute: AttributeValue): List<T> {
+    return attribute.asL().map { collectionTypeMapper.toItem(it) }
   }
 
   override fun attributeType(): KClass<out AttributeValue> {
