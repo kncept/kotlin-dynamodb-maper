@@ -3,7 +3,6 @@ package com.kncept.mapper
 import aws.sdk.kotlin.services.dynamodb.model.AttributeValue
 import com.kncept.mapper.annotation.MappedBy
 import com.kncept.mapper.annotation.MappedCollection
-import com.kncept.mapper.reflect.GenericObjectMapper
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.security.SecureRandom
@@ -14,7 +13,6 @@ import java.util.function.Consumer
 import kotlin.reflect.KClass
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 
 class DynamoDbObjectMapperTest {
 
@@ -27,20 +25,12 @@ class DynamoDbObjectMapperTest {
     assertEquals(FakeEmptyTypesMapper::class, emptyTypeMapper!!::class)
   }
 
-  @Test
-  fun genericTypesAreAutomaticallyRegistered() {
-    val objectMapper = DynamoDbObjectMapper()
-    val emptyTypeMapper = objectMapper.typeMapper(EmptyTypes::class)
-    assertNotNull(emptyTypeMapper)
-    assertEquals(GenericObjectMapper::class, emptyTypeMapper!!::class)
-  }
-
-  @Test
-  fun cannotContinueToMapBasicTypes() {
-    val objectMapper = DynamoDbObjectMapper()
-    val e = assertThrows<IllegalStateException> { objectMapper.typeMapper(Any::class) }
-    assertNotNull(e)
-  }
+  //  @Test
+  //  fun cannotContinueToMapBasicTypes() {
+  //    val objectMapper = DynamoDbObjectMapper()
+  //    val e = assertThrows<IllegalStateException> { objectMapper.typeMapper(Any::class) }
+  //    assertNotNull(e)
+  //  }
 
   @Test
   fun canReconstituteObjects() {
@@ -67,7 +57,7 @@ class DynamoDbObjectMapperTest {
     reconstitutableAsserter.accept(RecursiveTypes())
 
     reconstitutableAsserter.accept(WithMap())
-    //    reconstitutableAsserter.accept(ArrayTypes())
+    reconstitutableAsserter.accept(ArrayTypes())
   }
 
   @Test
@@ -79,6 +69,31 @@ class DynamoDbObjectMapperTest {
 
     assertEquals(true, booleanSrc.value)
     assertEquals("true", stringCopy.value)
+  }
+
+  @Test
+  fun correctlyDeterminesCollectionTypes() {
+    val objectMapper = DynamoDbObjectMapper()
+    assertTrue(objectMapper.isCollectionType(Set::class))
+    assertTrue(objectMapper.isCollectionType(List::class))
+    assertTrue(objectMapper.isCollectionType(Map::class))
+    assertTrue(objectMapper.isCollectionType(Array::class))
+
+    assertTrue(objectMapper.isCollectionType(listOf("")::class))
+    assertTrue(objectMapper.isCollectionType(arrayOf(Any())::class))
+  }
+
+  @Test
+  fun kotlinBuiltinsAreNotCollectionTypes() {
+    val objectMapper = DynamoDbObjectMapper()
+    assertFalse(objectMapper.isCollectionType(BooleanArray::class))
+    assertFalse(objectMapper.isCollectionType(Byte::class))
+    assertFalse(objectMapper.isCollectionType(ShortArray::class))
+    assertFalse(objectMapper.isCollectionType(IntArray::class))
+    assertFalse(objectMapper.isCollectionType(LongArray::class))
+    assertFalse(objectMapper.isCollectionType(CharArray::class))
+    assertFalse(objectMapper.isCollectionType(FloatArray::class))
+    assertFalse(objectMapper.isCollectionType(DoubleArray::class))
   }
 
   class FakeEmptyTypesMapper : TypeMapper<EmptyTypes> {
@@ -241,9 +256,16 @@ class DynamoDbObjectMapperTest {
       @MappedCollection(String::class) val emptyNullableStrings: Set<String>? = setOf(),
       @MappedCollection(String::class) val emptyStrings: Set<String> = setOf(),
       @MappedCollection(String::class) val stringWithEmpty: Set<String> = setOf(""),
-      @MappedCollection(String::class) val strings: Set<String> = setOf("1", "2"),
+      @MappedCollection(String::class) val strings: Set<String> = setOf("1", "2", "3"),
       @MappedCollection(String::class)
-      val mutableStrings: MutableSet<String> = mutableSetOf("3", "4")
+      val mutableStrings: MutableSet<String> = mutableSetOf("4", "5", "6"),
+      @MappedCollection(Int::class)
+      val ints: Set<Int> =
+          setOf(
+              (Math.random() * Int.MAX_VALUE).toInt(),
+              (Math.random() * Int.MAX_VALUE).toInt(),
+              (Math.random() * Int.MAX_VALUE).toInt(),
+          ),
   )
 
   data class ListCollectionTypes(
@@ -300,15 +322,40 @@ class DynamoDbObjectMapperTest {
                   (Math.random() * Short.MAX_VALUE).toInt().toString())
   )
 
-  //  data class ArrayTypes(
-  //      val nullableStrings: Array<String>? = null,
-  //      val emptyStrings: Array<String> = arrayOf(),
-  //      val strings: Array<String> = arrayOf("one", "two"),
-  //      val uuids: Array<UUID> = arrayOf(UUID.randomUUID(), UUID.randomUUID()),
-  //      val enums: Array<SimpleEnum> =
-  //          arrayOf(
-  //              DynamoDbObjectMapperTest.SimpleEnum.first,
-  //              DynamoDbObjectMapperTest.SimpleEnum.first,
-  //              DynamoDbObjectMapperTest.SimpleEnum.values().random()),
-  //  )
+  data class ArrayTypes(
+      val nullableStrings: Array<String>? = null,
+      val emptyStrings: Array<String> = arrayOf(),
+      val strings: Array<String> = arrayOf("one", "two"),
+      val uuids: Array<UUID> = arrayOf(UUID.randomUUID(), UUID.randomUUID()),
+      val enums: Array<SimpleEnum> =
+          arrayOf(
+              DynamoDbObjectMapperTest.SimpleEnum.first,
+              DynamoDbObjectMapperTest.SimpleEnum.first,
+              DynamoDbObjectMapperTest.SimpleEnum.values().random()),
+  ) {
+    override fun equals(other: Any?): Boolean {
+      if (this === other) return true
+      if (other !is ArrayTypes) return false
+
+      if (nullableStrings != null) {
+        if (other.nullableStrings == null) return false
+        if (!nullableStrings.contentEquals(other.nullableStrings)) return false
+      } else if (other.nullableStrings != null) return false
+      if (!emptyStrings.contentEquals(other.emptyStrings)) return false
+      if (!strings.contentEquals(other.strings)) return false
+      if (!uuids.contentEquals(other.uuids)) return false
+      if (!enums.contentEquals(other.enums)) return false
+
+      return true
+    }
+
+    override fun hashCode(): Int {
+      var result = nullableStrings?.contentHashCode() ?: 0
+      result = 31 * result + emptyStrings.contentHashCode()
+      result = 31 * result + strings.contentHashCode()
+      result = 31 * result + uuids.contentHashCode()
+      result = 31 * result + enums.contentHashCode()
+      return result
+    }
+  }
 }

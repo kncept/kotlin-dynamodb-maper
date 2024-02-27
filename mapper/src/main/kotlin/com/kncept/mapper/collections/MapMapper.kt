@@ -10,13 +10,13 @@ import kotlin.reflect.KClass
 
 class MapMapper(
     private val mapper: DynamoDbObjectMapper,
-    private val javaMathNumericTypes: Boolean = true
-) : TypeMapper<Map<String, Any>> {
-  override fun type(): KClass<Map<String, Any>> {
-    return Map::class as KClass<Map<String, Any>>
+    private val javaMathNumericTypes: Boolean,
+) : TypeMapper<Map<String, out Any>> {
+  override fun type(): KClass<Map<String, out Any>> {
+    return Map::class as KClass<Map<String, out Any>>
   }
 
-  override fun toType(attribute: AttributeValue): Map<String, Any> {
+  override fun toType(attribute: AttributeValue): Map<String, out Any> {
     return attribute
         .asM()
         .map { entry -> entry.key to unboundAttributeToProbableType(entry.value) }
@@ -27,7 +27,7 @@ class MapMapper(
     return AttributeValue.M::class
   }
 
-  override fun toAttribute(item: Map<String, Any>): AttributeValue {
+  override fun toAttribute(item: Map<String, out Any>): AttributeValue {
     return AttributeValue.M(
         item
             .map { entry ->
