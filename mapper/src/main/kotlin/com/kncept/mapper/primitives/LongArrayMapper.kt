@@ -17,7 +17,7 @@ class LongArrayMapper : TypeMapper<LongArray> {
   }
 
   override fun toItem(attribute: AttributeValue): LongArray {
-    return listMapper.toItem(attribute).toLongArray()
+    return listMapper.toItem(attribute).filterNotNull().toLongArray()
   }
 
   override fun toAttribute(item: LongArray): AttributeValue {

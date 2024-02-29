@@ -17,7 +17,7 @@ class ShortArrayMapper : TypeMapper<ShortArray> {
   }
 
   override fun toItem(attribute: AttributeValue): ShortArray {
-    return listMapper.toItem(attribute).toShortArray()
+    return listMapper.toItem(attribute).filterNotNull().toShortArray()
   }
 
   override fun toAttribute(item: ShortArray): AttributeValue {

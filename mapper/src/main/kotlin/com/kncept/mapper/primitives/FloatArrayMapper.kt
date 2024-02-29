@@ -17,7 +17,7 @@ class FloatArrayMapper : TypeMapper<FloatArray> {
   }
 
   override fun toItem(attribute: AttributeValue): FloatArray {
-    return listMapper.toItem(attribute).toFloatArray()
+    return listMapper.toItem(attribute).filterNotNull().toFloatArray()
   }
 
   override fun toAttribute(item: FloatArray): AttributeValue {

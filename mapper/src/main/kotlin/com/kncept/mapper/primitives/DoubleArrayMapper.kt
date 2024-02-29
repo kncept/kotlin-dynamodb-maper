@@ -17,7 +17,7 @@ class DoubleArrayMapper : TypeMapper<DoubleArray> {
   }
 
   override fun toItem(attribute: AttributeValue): DoubleArray {
-    return listMapper.toItem(attribute).toDoubleArray()
+    return listMapper.toItem(attribute).filterNotNull().toDoubleArray()
   }
 
   override fun toAttribute(item: DoubleArray): AttributeValue {

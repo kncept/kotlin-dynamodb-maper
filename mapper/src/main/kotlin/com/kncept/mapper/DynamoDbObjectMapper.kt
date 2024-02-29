@@ -199,19 +199,19 @@ class DynamoDbObjectMapper(
       if (type.isSubclassOf(Set::class)) {
         val componentType = collectionComponentType(property as KProperty<Any>)
         typeMapper(componentType)?.let { collectionTypeMapper ->
-          return SetMapper(collectionTypeMapper).toAttribute(item as Set<Any>)
+          return SetMapper(collectionTypeMapper).toAttribute(item as Set<Any?>)
         }
       }
       if (type.isSubclassOf(List::class)) {
         val componentType = collectionComponentType(property as KProperty<Any>)
         typeMapper(componentType)?.let { collectionTypeMapper ->
-          return ListMapper(collectionTypeMapper).toAttribute(item as List<Any>)
+          return ListMapper(collectionTypeMapper).toAttribute(item as List<Any?>)
         }
       }
       if (type.java.isArray) { // type.isSubclassOf(Array::class) << doesn't work :/
         val componentType = collectionComponentType(property as KProperty<Any>)
         typeMapper(componentType)?.let { collectionTypeMapper ->
-          return ArrayMapper(collectionTypeMapper).toAttribute(item as Array<Any>)
+          return ArrayMapper(collectionTypeMapper).toAttribute(item as Array<Any?>)
         }
       }
       if (type.isSubclassOf(Map::class)) {

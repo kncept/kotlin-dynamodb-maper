@@ -7,13 +7,13 @@ import kotlin.reflect.KClass
 
 class SetMapper<T : Any>(
     val collectionTypeMapper: TypeMapper<T>,
-) : TypeMapper<Set<T>> {
+) : TypeMapper<Set<T?>> {
 
-  override fun type(): KClass<Set<T>> {
-    return Set::class as KClass<Set<T>>
+  override fun type(): KClass<Set<T?>> {
+    return Set::class as KClass<Set<T?>>
   }
 
-  override fun toItem(attribute: AttributeValue): Set<T> {
+  override fun toItem(attribute: AttributeValue): Set<T?> {
     return when (collectionTypeMapper.attributeType()) {
       AttributeValue.S::class ->
           attribute
@@ -48,8 +48,11 @@ class SetMapper<T : Any>(
     }
   }
 
-  override fun toAttribute(item: Set<T>): AttributeValue {
-    val list = (item as Set<*>).map { collectionTypeMapper.toAttribute(it!! as T) }
+  override fun toAttribute(item: Set<T?>): AttributeValue {
+    val list =
+        (item as Set<*>)
+            .map { if (it == null) null else collectionTypeMapper.toAttribute(it as T) }
+            .filterNotNull()
     return when (collectionTypeMapper.attributeType()) {
       AttributeValue.S::class -> AttributeValue.Ss(list.map { it.asS() })
       AttributeValue.N::class -> AttributeValue.Ns(list.map { it.asN() })

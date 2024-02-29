@@ -10,7 +10,7 @@ interface TypeMapper<T : Any> {
   fun type(): KClass<T>
 
   /** Convert from an attribute to an item<br> */
-  fun toItem(attribute: AttributeValue): T
+  fun toItem(attribute: AttributeValue): T?
 
   /** Convert from an item to an attribute<br> */
   fun toAttribute(item: T): AttributeValue
